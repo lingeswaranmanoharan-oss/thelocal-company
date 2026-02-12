@@ -1,5 +1,6 @@
 import config from '../config/config';
 import StorageService from '../services/storageService';
+import { getAccessToken } from '../services/httpService';
 import { apiStatusConstants } from './enum';
 
 const getClientStorage = () => {
@@ -60,7 +61,7 @@ const handleQueryParams = (params) => {
 
 const getAuthTokenDetails = () => {
   try {
-    const token = StorageService?.get(config.hrmToken);
+    const token = getAccessToken();
 
     if (!token) return null;
 

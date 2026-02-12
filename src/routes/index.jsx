@@ -11,6 +11,7 @@ import ViewEmployeeDetails from '../pages/employee/ViewEmployeeDetails/ViewEmplo
 import Designation from '../pages/masters/designations/Designation';
 import Department from '../pages/masters/departments/Department';
 import EmployeeTypesPage from '../pages/masters/employement-types/employeeTypespage';
+import Payroll from '../pages/payroll/Payroll';
 
 export const router = createBrowserRouter([
   {
@@ -92,4 +93,14 @@ export const router = createBrowserRouter([
       },
     ],
   },
+  {
+    path: '/payroll',
+    element: <ProtectedRoute />,
+     children: [
+      {
+        path: 'upload-excel',
+        element: <Payroll />,
+      }
+    ],
+  }
 ]);

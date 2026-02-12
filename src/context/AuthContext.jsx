@@ -1,24 +1,56 @@
-import { createContext, useContext, useState } from 'react';
-import StorageService from '../services/storageService';
-import config from '../config/config';
+import { createContext, useContext, useState, useEffect } from "react";
+import { setAccessToken, setTokenUpdateCallback } from '../services/httpService';
+import axios from 'axios';
+import { config } from '../config/config';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [token, setTokenState] = useState(StorageService.get(config.hrmToken));
+  const [token, setToken] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const setToken = (newToken) => {
-    StorageService.set(config.hrmToken, newToken);
-    setTokenState(newToken);
+  const initAuth = async () => {
+    try {
+      const refreshResponse = await axios.post(
+        config.apiBaseUrl + '/auth/refresh',
+        {},
+        { withCredentials: true }
+      );
+      if(refreshResponse.data){
+        const {accessToken} = refreshResponse.data.data;
+        setAccessToken(accessToken); 
+        setToken(accessToken);
+      }
+    } catch {
+      setToken(null);
+      setAccessToken(null); 
+    } finally {
+      setLoading(false);
+    }
   };
 
+  useEffect(() => {
+    initAuth();
+  }, []);
+
+  useEffect(() => {
+    setAccessToken(token);
+  }, [token]);
+
+  useEffect(() => {
+    setTokenUpdateCallback(setToken);
+    return () => setTokenUpdateCallback(null);
+  }, []);
+
   const logout = () => {
-    StorageService.remove(config.hrmToken);
-    setTokenState(null);
+    setToken(null);
+    setAccessToken(null); 
   };
 
   return (
-    <AuthContext.Provider value={{ token, setToken, logout }}>{children}</AuthContext.Provider>
+    <AuthContext.Provider value={{ token, setToken, logout }}>
+       {!loading && children}
+    </AuthContext.Provider>
   );
 };
 

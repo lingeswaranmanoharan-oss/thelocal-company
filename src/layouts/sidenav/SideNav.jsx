@@ -33,6 +33,14 @@ const menuConfig = [
       { label: 'Departments', path: '/masters/departments' },
     ],
   },
+  {
+    key: 'payroll',
+    label: 'Payroll',
+    icon: icons.masters,
+    children: [
+      { label: 'Upload Excel', path: '/payroll/upload-excel' }
+    ],
+  },
 ];
 
 const SideNav = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {

@@ -1,0 +1,57 @@
+.login-page-container {
+  @apply flex min-h-screen w-full;
+}
+
+.login-page-left {
+  @apply flex-none w-[40%] relative flex items-center justify-center p-12 overflow-hidden;
+  background: linear-gradient(180deg, #fff8f6 0%, #ffb08b 100%);
+}
+
+.login-page-right {
+  @apply flex-1 bg-white flex-col justify-between relative;
+
+  .login-page-logo {
+    @apply flex justify-center items-center gap-3 mb-8;
+
+    .logo-icon {
+      @apply flex items-center justify-center;
+    }
+
+    .logo-text {
+      @apply text-2xl font-bold text-gray-800;
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 1024px) {
+  .login-page-container {
+    @apply flex-col;
+  }
+
+  .login-page-left {
+    @apply flex-none w-[100%] min-h-[350px] p-8;
+
+    .login-page-text h2 {
+      @apply text-3xl;
+    }
+  }
+
+  .login-page-right {
+    @apply flex-1 p-6;
+  }
+}
+
+@media (max-width: 768px) {
+  .login-page-left {
+    .login-page-text h2 {
+      @apply text-2xl;
+    }
+  }
+
+  .login-page-right {
+    .login-page-logo {
+      @apply mb-4;
+    }
+  }
+}

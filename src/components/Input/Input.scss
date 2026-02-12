@@ -1,0 +1,23 @@
+.input-wrapper {
+  .input-container {
+    @apply relative;
+  }
+
+  .input-icon {
+    @apply absolute right-3 top-1/2 flex items-center z-10 pointer-events-none;
+    transform: translateY(-50%);
+
+    &.right-icon {
+      @apply pointer-events-none;
+    }
+
+    &.password-toggle-icon {
+      @apply cursor-pointer pointer-events-auto;
+    }
+
+    svg {
+      @apply w-5 h-5;
+    }
+  }
+}
+

@@ -1,0 +1,56 @@
+.toggle-wrapper {
+  .toggle-container {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    cursor: pointer;
+  }
+
+  .toggle-input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .toggle-slider {
+    position: absolute;
+    inset: 0;
+    background-color: #d1d5db;
+    border-radius: 9999px;
+    transition: background-color 0.2s ease;
+  }
+
+  .toggle-slider::before {
+    content: '';
+    position: absolute;
+    left: 4px;
+    top: 4px;
+    width: 16px;
+    height: 16px;
+    background-color: #ffffff;
+    border-radius: 50%;
+    transition: transform 0.2s ease;
+  }
+
+  /* Checked */
+  .toggle-input:checked + .toggle-slider {
+    background-color: #f26522;
+  }
+
+  .toggle-input:checked + .toggle-slider::before {
+    transform: translateX(20px);
+  }
+
+  /* Focus */
+  .toggle-input:focus-visible + .toggle-slider {
+    box-shadow: 0 0 0 2px rgba(242, 101, 34, 0.4);
+  }
+
+  /* Disabled */
+  .toggle-input:disabled + .toggle-slider {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}

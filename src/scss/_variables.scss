@@ -1,0 +1,59 @@
+:root {
+  --hrm-primary: #f26522;
+  --hrm-primary-hover: #d95a1e;
+  --hrm-primary-border: #f26522;
+  --hrm-light: #f8f9fa;
+  --hrm-dark: #212529;
+  --hrm-text: #212529;
+  --hrm-text-muted: #6c757d;
+  --hrm-border: #dee2e6;
+  --hrm-border-focus: #f26522;
+  --hrm-error: #cf2536;
+  --hrm-background: #ffffff;
+  --hrm-input-bg: #ffffff;
+  // }
+
+  // :root {
+  /* Primary Brand Colors */
+  --primary-red: #ff5733;
+  --primary-red-hover: #e64a2e;
+  --primary-orange: #ff6b35;
+
+  /* Background Colors */
+  --bg-primary: #f8f9fa;
+  --bg-white: #ffffff;
+  --bg-sidebar: #ffffff;
+  --bg-hover: #f3f4f6;
+
+  /* Text Colors */
+  --text-primary: #1f2937;
+  --text-secondary: #6b7280;
+  --text-light: #9ca3af;
+  --text-white: #ffffff;
+
+  /* Border Colors */
+  --border-light: #e5e7eb;
+  --border-medium: #d1d5db;
+
+  /* Status Colors */
+  --status-red: #ef4444;
+  --status-orange: #f97316;
+  --status-blue: #3b82f6;
+  --status-green: #10b981;
+  --status-purple: #8b5cf6;
+  --status-pink: #ec4899;
+  --status-yellow: #f59e0b;
+
+  /* Chart Colors */
+  --chart-hr: #ff6b35;
+  --chart-development: #ff8b5f;
+  --chart-management: #ffa578;
+  --chart-testing: #ffb88c;
+  --chart-marketing: #ff6b35;
+
+  /* Shadow */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --table-td-color: #4b5563;
+}

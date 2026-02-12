@@ -1,0 +1,86 @@
+.login-form {
+  @apply w-full h-[100vh] max-w-md mx-auto flex flex-col justify-center;
+
+  .login-form-header {
+    @apply mb-8;
+  }
+
+  .login-form-fields {
+    @apply mb-6;
+  }
+
+  .login-form-options {
+    @apply flex justify-end items-center mb-6;
+
+    .forgot-password-link {
+      @apply text-sm text-red-600 no-underline font-medium;
+
+      &:hover {
+        @apply underline;
+      }
+    }
+  }
+
+  .error-message {
+    @apply bg-red-50 text-red-600 p-3 rounded-md text-sm mb-4;
+  }
+
+  .login-submit-button {
+    @apply mb-6;
+  }
+
+  .login-form-footer {
+    @apply text-center mb-6;
+
+    .create-account-link {
+      @apply text-orange-600 no-underline font-semibold;
+
+      &:hover {
+        @apply underline;
+      }
+    }
+  }
+
+  .login-divider {
+    @apply relative text-center my-6;
+
+    &::before {
+      content: '';
+      @apply absolute top-1/2 left-0 right-0 h-px bg-gray-200;
+      transform: translateY(-50%);
+    }
+
+    span {
+      @apply relative bg-white px-4 text-gray-600 text-sm;
+    }
+  }
+
+  .social-login-buttons {
+    @apply flex gap-4 justify-center;
+
+    .social-button {
+      @apply w-[33.33%] h-12 rounded-lg border-none flex items-center justify-center cursor-pointer transition-all duration-200;
+
+      &:hover {
+        @apply -translate-y-0.5 shadow-md;
+      }
+
+      &.facebook-button {
+        @apply bg-blue-600;
+      }
+
+      &.google-button {
+        @apply bg-white border border-gray-200;
+        border: 1px solid #ededed;
+      }
+
+      &.apple-button {
+        @apply bg-black;
+      }
+
+      svg {
+        @apply w-6 h-6;
+      }
+    }
+  }
+}

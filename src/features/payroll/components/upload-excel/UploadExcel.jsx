@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { Icon } from "@iconify/react";
 import "./UploadExcel.scss";
 import toaster from "../../../../services/toasterService";
@@ -6,8 +6,10 @@ import { Breadcrumb } from "../../../../components/Breadcrumb/Breadcrumb";
 import useBreadcrumbs from "../../../../hooks/useBreadCrumbs";
 import { icons } from "../../../../Utils/constants";
 import * as XLSX from "xlsx";
+import PreviewExcel from "../preview-excel/PreviewExcel";
 
 const UploadExcel = () => {
+  const [showExcelPreview, setShowExcelPreview] = useState(false)
   useBreadcrumbs([
     {
       icon: icons.uploadExcel,
@@ -40,6 +42,8 @@ const UploadExcel = () => {
       toaster.success("File read successfully!");
     };
     reader.readAsArrayBuffer(file);
+
+    setShowExcelPreview(true)
   };
   const handleDownloadReference = () => {
     const headers = [
@@ -93,41 +97,47 @@ const UploadExcel = () => {
   return (
     <>
       <Breadcrumb />
-      <div className="upload-container">
-        <div
-          className="upload-card"
-          onDragOver={handleDragOver}
-          onDrop={handleDrop}
-        >
-          <Icon icon="material-symbols:upload-rounded" className="upload-icon" />
-          <h2 className="upload-title">Upload Excel File</h2>
-          <p className="upload-description">
-            Drag & Drop your .xlsx file here
-          </p>
-          <p className="upload-click">
-            or{" "}
-            <span onClick={handleClick} style={{ cursor: "pointer" }}>
-              Click here to select file
-            </span>
-          </p>
-          <button
-            type="button"
-            className="download-btn"
-            onClick={handleDownloadReference}
-          >
-            Download sample Excel
-          </button>
-          <input
-            type="file"
-            ref={fileInputRef}
-            style={{ display: "none" }}
-            accept=".xlsx"
-            onChange={handleFileChange}
-          />
-        </div>
+      {
+        !showExcelPreview ? <>
+          <div className="upload-container">
+            <div
+              className="upload-card"
+              onDragOver={handleDragOver}
+              onDrop={handleDrop}
+            >
+              <Icon icon="material-symbols:upload-rounded" className="upload-icon" />
+              <h2 className="upload-title">Upload Excel File</h2>
+              <p className="upload-description">
+                Drag & Drop your .xlsx file here
+              </p>
+              <p className="upload-click">
+                or{" "}
+                <span onClick={handleClick} style={{ cursor: "pointer" }}>
+                  Click here to select file
+                </span>
+              </p>
+              <button
+                type="button"
+                className="download-btn"
+                onClick={handleDownloadReference}
+              >
+                Download sample Excel
+              </button>
+              <input
+                type="file"
+                ref={fileInputRef}
+                style={{ display: "none" }}
+                accept=".xlsx"
+                onChange={handleFileChange}
+              />
+            </div>
 
 
-      </div>
+          </div></> :
+          <div>
+            <PreviewExcel />
+          </div>
+      }
     </>
   );
 };

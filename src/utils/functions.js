@@ -100,6 +100,16 @@ const getDateToDDMMYYYYformat = (timezone, nullShow) => {
 
   return `${day}-${month}-${year}`;
 };
+
+const monthStringToDate = (mmYyyy) => {
+  if (!mmYyyy || typeof mmYyyy !== 'string') return '';
+  const [mm, yyyy] = mmYyyy.trim().split('-');
+  if (!mm || !yyyy || mm.length < 1 || yyyy.length < 4) return '';
+  const month = mm.padStart(2, '0');
+  const year = yyyy.length === 2 ? `20${yyyy}` : yyyy;
+  return `${year}-${month}-01`;
+};
+
 export {
   apiReducer,
   initialState,
@@ -110,4 +120,5 @@ export {
   getCompanyId,
   apiStatusConditions,
   getDateToDDMMYYYYformat,
+  monthStringToDate,
 };

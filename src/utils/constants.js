@@ -31,6 +31,7 @@ export const icons = {
   masters: 'hugeicons:menu-square',
   eyeIcon: 'lsicon:view-outline',
   uploadExcel: 'material-symbols:upload-rounded',
+  payroll: 'streamline-freehand:cash-payment-bill'
 };
 
 export const ITEMS_PER_PAGE_OPTIONS = [10, 25, 50, 100];

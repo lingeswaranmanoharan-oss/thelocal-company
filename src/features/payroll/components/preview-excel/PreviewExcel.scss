@@ -1,0 +1,204 @@
+.preview-excel {
+  padding: 1rem;
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.preview-excel-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  gap: 1rem;
+}
+
+.preview-excel-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.preview-excel-title {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.preview-excel-table-wrap {
+  overflow: auto;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  max-height: 70vh;
+}
+
+.preview-excel-table {
+  width: 100%;
+  min-width: max-content;
+  border-collapse: collapse;
+  font-size: 13px;
+  background: #fff;
+
+  thead {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: #f3f4f6;
+    box-shadow: 0 1px 0 #e5e7eb;
+  }
+
+  th,
+  td {
+    border: 1px solid #e5e7eb;
+    // padding: 0;
+    vertical-align: middle;
+  }
+}
+
+.preview-excel-th {
+  padding: 8px 10px;
+  font-weight: 600;
+  text-align: left;
+  color: #374151;
+  white-space: nowrap;
+
+  &:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 3;
+    background: #f3f4f6;
+    box-shadow: 2px 0 4px rgba(0, 0, 0, 0.06);
+    min-width: 120px;
+  }
+
+  &.preview-excel-th-actions {
+    width: 44px;
+    min-width: 44px;
+    text-align: center;
+    background: #f9fafb;
+  }
+}
+
+.preview-excel-tr {
+  &:hover {
+    background: #f9fafb;
+
+    .preview-excel-td:first-child {
+      background: #f9fafb;
+    }
+  }
+}
+
+.preview-excel-td {
+  min-width: 0;
+
+  &:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    background: #fff;
+    box-shadow: 2px 0 4px rgba(0, 0, 0, 0.06);
+    min-width: 120px;
+  }
+
+  &.preview-excel-td-row-num {
+    width: 40px;
+    min-width: 40px;
+    text-align: center;
+    background: #f9fafb;
+    color: #6b7280;
+    font-size: 12px;
+  }
+
+  &.preview-excel-td-actions {
+    width: 44px;
+    min-width: 44px;
+    text-align: center;
+    padding: 4px;
+    background: #f9fafb;
+  }
+}
+
+// Reusable Input / DateInput inside cell - compact, Excel-like
+.preview-excel-input-wrapper {
+  margin: 0;
+  min-width: 100px;
+
+  .input-container input {
+    min-width: 100px;
+    padding: 6px 10px !important;
+    font-size: 13px;
+    color: #1f2937;
+    background: #fff;
+    border: none !important;
+    border-radius: 0;
+    box-shadow: none;
+
+    &:focus {
+      background: #eff6ff;
+      outline: 1px solid #2563eb;
+      outline-offset: -1px;
+      z-index: 1;
+      border-color: transparent !important;
+    }
+
+    &::placeholder {
+      color: #9ca3af;
+    }
+  }
+
+  .input-container .MuiInputBase-root {
+    min-width: 100px;
+    font-size: 13px;
+  }
+}
+
+.preview-excel-remove-row {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  line-height: 1;
+  color: #6b7280;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    color: #dc2626;
+    border-color: #fca5a5;
+    background: #fef2f2;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+// MUI DatePicker inside cell - compact
+.preview-excel-td .MuiFormControl-root {
+  width: 100%;
+  min-width: 120px;
+
+  .MuiInputBase-root {
+    font-size: 13px;
+  }
+
+  .MuiOutlinedInput-notchedOutline {
+    border-color: transparent;
+  }
+
+  .MuiInputBase-root:hover .MuiOutlinedInput-notchedOutline {
+    border-color: #d1d5db;
+  }
+
+  .MuiInputBase-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+    border-color: #2563eb;
+    border-width: 1px;
+  }
+}

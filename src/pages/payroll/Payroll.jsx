@@ -2,7 +2,9 @@ import UploadExcel from "../../features/payroll/components/upload-excel/UploadEx
 
 const Payroll = () => {
   return (
-    <UploadExcel/>
+    <div>
+      <UploadExcel/>
+    </div>
   )
 }
 

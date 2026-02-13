@@ -36,7 +36,7 @@ const menuConfig = [
   {
     key: 'payroll',
     label: 'Payroll',
-    icon: icons.masters,
+    icon: icons.payroll,
     children: [
       { label: 'Upload Excel', path: '/payroll/upload-excel' }
     ],

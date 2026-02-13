@@ -30,6 +30,7 @@ export const icons = {
   employees: 'streamline-ultimate:human-resources-search-employees-bold',
   masters: 'hugeicons:menu-square',
   eyeIcon: 'lsicon:view-outline',
+  uploadExcel: 'material-symbols:upload-rounded',
 };
 
 export const ITEMS_PER_PAGE_OPTIONS = [10, 25, 50, 100];

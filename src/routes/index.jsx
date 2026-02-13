@@ -46,7 +46,7 @@ export const router = createBrowserRouter([
       },
       {
         path: 'departments',
-        element: <Department/>,
+        element: <Department />,
       },
       {
         path: 'designations',
@@ -96,7 +96,7 @@ export const router = createBrowserRouter([
   {
     path: '/payroll',
     element: <ProtectedRoute />,
-     children: [
+    children: [
       {
         path: 'upload-excel',
         element: <Payroll />,

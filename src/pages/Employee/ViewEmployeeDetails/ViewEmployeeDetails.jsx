@@ -1,9 +1,9 @@
 import React from 'react';
-import ViewEmployeeDetailsData from '../../../features/employee/components/ViewEmployeeDetailsData/ViewEmployeeDetailsData';
 import useRouteInformation from '../../../hooks/useRouteInformation';
 import useBreadcrumbs from '../../../hooks/useBreadCrumbs';
 import { icons } from '../../../Utils/constants';
 import { Breadcrumb } from '../../../components/Breadcrumb/Breadcrumb';
+import ViewEmployeesDetail from '../../../features/employee/components/ViewEmployeeDetailsData/ViewEmployeeDetails';
 
 const ViewEmployeeDetails = () => {
   const { pathname } = useRouteInformation();
@@ -21,7 +21,7 @@ const ViewEmployeeDetails = () => {
   return (
     <div>
       <Breadcrumb />
-      <ViewEmployeeDetailsData />
+      <ViewEmployeesDetail />
     </div>
   );
 };

@@ -31,7 +31,27 @@ export const icons = {
   masters: 'hugeicons:menu-square',
   eyeIcon: 'lsicon:view-outline',
   uploadExcel: 'material-symbols:upload-rounded',
-  payroll: 'streamline-freehand:cash-payment-bill'
+  payroll: 'streamline-freehand:cash-payment-bill',
+
+  checkCircle: 'mdi:check-circle',
+  cardAccount: 'mdi:card-account-details-outline',
+  star: 'mdi:star-outline',
+  calendar: 'mdi:calendar-outline',
+  officeBuilding: 'mdi:office-building-outline',
+  message: 'mdi:message-outline',
+  phone: 'mdi:phone-outline',
+  email: 'mdi:email-outline',
+  copy: 'mdi:content-copy',
+  gender: 'mdi:gender-male-female',
+  birthday: 'mdi:cake-variant-outline',
+  mapMarker: 'mdi:map-marker-outline',
+  passport: 'mdi:passport',
+  account: 'mdi:account-outline',
+  pencil: 'mdi:pencil-outline',
+  religion: 'mdi:church',
+  marital: 'mdi:ring',
+  briefcase: 'mdi:briefcase-outline',
+  children: 'mdi:baby-bottle-outline',
 };
 
 export const ITEMS_PER_PAGE_OPTIONS = [10, 25, 50, 100];

@@ -12,6 +12,7 @@ import Designation from '../pages/masters/designations/Designation';
 import Department from '../pages/masters/departments/Department';
 import EmployeeTypesPage from '../pages/masters/employement-types/employeeTypespage';
 import Payroll from '../pages/payroll/Payroll';
+import { ResetPasswordPage } from '../pages/auth/ResetPasswordPage';
 
 export const router = createBrowserRouter([
   {
@@ -28,6 +29,12 @@ export const router = createBrowserRouter([
       <PublicRoute>
         <ForgotPasswordPage />
       </PublicRoute>
+    ),
+  },
+  {
+    path: '/reset',
+    element: (
+      <ResetPasswordPage />
     ),
   },
   {

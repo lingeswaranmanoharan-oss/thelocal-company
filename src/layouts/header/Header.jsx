@@ -9,9 +9,10 @@ import { useDispatch } from 'react-redux';
 import { fetchProfile } from '../../features/profile/profileSlice';
 import { useSelector } from 'react-redux';
 import { apiStatusConditions } from '../../Utils/constants';
-
+import Popup from '../../components/Popup/Popup';
 const Header = ({ onMobileMenuToggle }) => {
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [openLogoutPopup, setOpenLogoutPopup] = useState(false);
   const { navigate } = useRouteInformation();
   const { logout } = useAuth();
   const dispatch = useDispatch();
@@ -142,11 +143,10 @@ const Header = ({ onMobileMenuToggle }) => {
                 src={
                   apiStatusConditions.success(profile)
                     ? profile?.data?.data?.logoUrl
-                    : `https://placehold.co/600x400?text=${
-                        apiStatusConditions.failure(profile)
-                          ? 'failed to fetch the logo'
-                          : 'fetching logo...'
-                      }`
+                    : `https://placehold.co/600x400?text=${apiStatusConditions.failure(profile)
+                      ? 'failed to fetch the logo'
+                      : 'fetching logo...'
+                    }`
                 }
                 alt="User Avatar"
                 className="w-8 h-8 rounded-full"
@@ -214,7 +214,7 @@ const Header = ({ onMobileMenuToggle }) => {
                 <div className="border-t" style={{ borderColor: 'var(--border-light)' }}>
                   <button
                     className="w-full px-4 py-3 text-left text-sm hover:bg-gray-50 flex items-center space-x-2"
-                    onClick={handleLogout}
+                    onClick={() => setOpenLogoutPopup(true)}
                   >
                     <Icon
                       icon="mdi:logout"
@@ -229,6 +229,33 @@ const Header = ({ onMobileMenuToggle }) => {
           </div>
         </div>
       </div>
+      <Popup
+        open={openLogoutPopup}
+        header="Confirm Logout"
+        onClose={() => setOpenLogoutPopup(false)}
+        footer={
+          <>
+            <button
+              className="px-4 py-2 border rounded"
+              onClick={() => setOpenLogoutPopup(false)}
+            >
+              Cancel
+            </button>
+
+            <button
+              className="px-4 py-2 bg-red-500 text-white rounded"
+              onClick={async () => {
+                setOpenLogoutPopup(false);
+                await handleLogout();
+              }}
+            >
+              Logout
+            </button>
+          </>
+        }
+      >
+        Are you sure you want to logout?
+      </Popup>
     </header>
   );
 };

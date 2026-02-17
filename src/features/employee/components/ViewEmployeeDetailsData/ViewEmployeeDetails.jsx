@@ -92,6 +92,14 @@ const ViewEmployeesDetail = () => {
     useEffect(() => {
         getEmployeeDetails();
     }, [getEmployeeDetails]);
+    const handleViewDocument = (url) => {
+        if (!url) {
+            toaster.error("Document not available");
+            return;
+        }
+        window.open(url, "_blank", "noopener,noreferrer");
+    };
+
 
     const primaryContact = data?.familyDetails?.[0];
     const secondaryContact = data?.familyDetails?.[1];
@@ -317,6 +325,39 @@ const ViewEmployeesDetail = () => {
                         </tbody>
                     </table>
                 </Accordion>
+                <Accordion title="Documents">
+                    <table className="family-table">
+                        <thead>
+                            <tr>
+                                <th>Document Name</th>
+                                <th>Documents Number</th>
+                                <th style={{ textAlign: "center" }}>View</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {data.documents?.length > 0 ? (
+                                data.documents.map((row, i) => (
+                                    <tr key={i}>
+                                        <td>{row.documentName || '--'}</td>
+                                        <td>{row.documentNumber || '--'}</td>
+                                        <td style={{ textAlign: "center" }}>
+                                            <Icon
+                                                icon="mdi:eye-outline"
+                                                style={{ color: "#dc2626" }}
+                                                className="cursor-pointer w-5 h-5"
+                                                onClick={() => handleViewDocument(row.documentUrl)}
+                                            />
+
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <p className="text-gray-500 text-sm">--</p>
+                            )}
+                        </tbody>
+                    </table>
+                </Accordion>
+
 
                 <Accordion title="Family Information" defaultExpanded>
                     {data.familyDetails?.length > 0 ? (

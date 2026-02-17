@@ -13,6 +13,8 @@ import Department from '../pages/masters/departments/Department';
 import EmployeeTypesPage from '../pages/masters/employement-types/employeeTypespage';
 import Payroll from '../pages/payroll/Payroll';
 import { ResetPasswordPage } from '../pages/auth/ResetPasswordPage';
+import SalaryComponentListPage from '../pages/masters/salary-component/SalaryComponentPage';
+import SalaryComponentFormPage from '../pages/masters/salary-component/SalaryComponentFormPage';
 
 export const router = createBrowserRouter([
   {
@@ -59,6 +61,18 @@ export const router = createBrowserRouter([
         path: 'designations',
         element: <Designation />,
       },
+      {
+        path: 'salary-component',
+        element: <SalaryComponentListPage />,
+      },
+      {
+        path: 'salary-component/add-salary-component',
+        element: <SalaryComponentFormPage />,
+      },
+      {
+        path: 'salary-component/edit-salary-component/:id',
+        element: <SalaryComponentFormPage />,
+      }
     ],
   },
   {

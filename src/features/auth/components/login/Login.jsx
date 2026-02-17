@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import toaster from '../../../../services/toasterService';
 import { useAuth } from '../../../../context/AuthContext';
 import StorageService from '../../../../services/storageService';
+import { setAccessToken } from '../../../../services/httpService';
 
 const loginSchema = yup.object().shape({
   username: yup.string().required('User Name is required'),
@@ -47,9 +48,10 @@ const Login = () => {
       const sigInResponse = await signIn(formData);
       if (sigInResponse) {
         const { accessToken } = sigInResponse.data;
+        setAccessToken(accessToken);
         setToken(accessToken);
         navigate('/');
-        toaster.success(sigInResponse.message);
+        // toaster.success(sigInResponse.message);
       }
     } catch (error) {
       if (error.response) {

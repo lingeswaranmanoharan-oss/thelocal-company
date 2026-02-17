@@ -11,7 +11,6 @@ export const setAccessToken = (token) => {
 export const getAccessToken = () => inMemoryToken;
 
 export const setTokenUpdateCallback = (responseCallback) => {
-  console.log(responseCallback)
   tokenUpdateCallback = responseCallback;
 };
 
@@ -22,9 +21,8 @@ const http = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials: true
+  withCredentials: true,
 });
-
 
 let isRefreshing = false;
 let refreshSubscribers = [];
@@ -34,7 +32,6 @@ const onRrefreshed = (token) => {
   refreshSubscribers = [];
 };
 
-
 http.interceptors.request.use(
   (config) => {
     if (inMemoryToken) {
@@ -42,9 +39,8 @@ http.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
-
 
 http.interceptors.response.use(
   (response) => {
@@ -53,12 +49,17 @@ http.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
     const authEndpoints = ['/auth/login', '/auth/refresh'];
-    const isAuthEndpoint = authEndpoints.some(endpoint => originalRequest?.url?.includes(endpoint));
+    const isAuthEndpoint = authEndpoints.some((endpoint) =>
+      originalRequest?.url?.includes(endpoint),
+    );
 
     if (isAuthEndpoint) {
       return Promise.reject(error);
     }
-    if ((error.response?.status === 401 || error.response?.status === 403) && !originalRequest._retry) {
+    if (
+      (error.response?.status === 401 || error.response?.status === 403) &&
+      !originalRequest._retry
+    ) {
       if (isRefreshing) {
         return new Promise((resolve) => {
           refreshSubscribers.push((newToken) => {
@@ -68,18 +69,16 @@ http.interceptors.response.use(
         });
       }
 
-
       originalRequest._retry = true;
       isRefreshing = true;
-
 
       try {
         const response = await axios.post(
           config.apiBaseUrl + '/auth/refresh',
           {},
-          { withCredentials: true }
+          { withCredentials: true },
         );
-        const { accessToken } = response.data.data
+        const { accessToken } = response.data.data;
         isRefreshing = false;
         if (accessToken) {
           inMemoryToken = accessToken;
@@ -91,14 +90,13 @@ http.interceptors.response.use(
       } catch (error) {
         isRefreshing = false;
         inMemoryToken = null;
-        window.location.href = `/login?redirect=${window.location.pathname+window.location.search}`;
+        window.location.href = `/login?redirect=${window.location.pathname + window.location.search}`;
         return Promise.reject(error);
       }
     }
     return Promise.reject(error.response || error.message);
-  }
+  },
 );
-
 
 // Add utility methods for HTTP operations
 const HttpService = {
@@ -108,6 +106,5 @@ const HttpService = {
   patch: (url, data, config) => http.patch(url, data, config),
   delete: (url, config) => http.delete(url, config),
 };
-
 
 export default HttpService;

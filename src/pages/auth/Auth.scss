@@ -55,3 +55,54 @@
     }
   }
 }
+.password-strength {
+  display: flex;
+  align-items: center;
+  margin-top: 0.5rem;
+  gap: 4px;
+}
+
+.strength-meter {
+  height: 4px;
+  flex-grow: 1;
+  background: #e0e0e0;
+  border-radius: 2px;
+}
+
+.strength-meter[data-level='1'].active {
+  background: #ff4444;
+}
+.strength-meter[data-level='2'].active {
+  background: #ffbb33;
+}
+.strength-meter[data-level='3'].active,
+.strength-meter[data-level='4'].active {
+  background: #00c851;
+}
+
+.strength-text {
+  margin-left: 8px;
+  font-size: 0.875rem;
+  color: #666;
+}
+
+.password-requirements {
+  color: #666;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  padding-left: 1.25rem;
+}
+
+.password-requirements .met {
+  color: #00c851;
+}
+
+.password-requirements .unmet {
+  color: #666;
+}
+
+.match-indicator {
+  color: #00c851;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}

@@ -2,6 +2,8 @@ import { Outlet } from 'react-router-dom';
 import Header from '../header/Header';
 import SideNav from '../sidenav/SideNav';
 import { useState, useEffect } from 'react';
+import { getAuthTokenDetails } from '../../utils/functions';
+import ChangePasswordPage from '../../pages/auth/ChangePasswordPage';
 
 export const Container = () => {
   const [currentPage, setCurrentPage] = useState('dashboard');
@@ -31,6 +33,9 @@ export const Container = () => {
     return <Outlet />;
   };
 
+  if (getAuthTokenDetails()?.firstLogin === false) {
+    return <ChangePasswordPage />;
+  }
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-primary)' }}>
       <div className="flex h-screen overflow-hidden">

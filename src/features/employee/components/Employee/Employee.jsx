@@ -10,11 +10,14 @@ import apiEndpoints from '../../../../services/apiEndPoints';
 import { apiStatusConstants, EmployeeTypes } from '../../../../utils/enum';
 import { TableComponent, TableRow } from '../../../../components/Table/Table';
 import { Button, ViewIconButton } from '../../../../components/Button/Button';
+import { Icon } from '@iconify/react';
+import { IconButton } from '@mui/material';
 import { Link } from 'react-router-dom';
 import useRouteInformation from '../../../../hooks/useRouteInformation';
 import toaster from '../../../../services/toasterService';
 import Popup from '../../../../components/Popup/Popup';
 import { generateEmpDetails } from '../../services/services';
+import AddSalaryPopup from './AddSalaryPopup';
 import { Input } from '../../../../components/Input/Input';
 import DateInput from '../../../../components/DateInput/DateInput';
 import * as yup from 'yup';
@@ -112,6 +115,7 @@ const EmployeeEdit = ({ getEmployees, empId }) => {
 
 const EachEmployeeRow = ({ each, pathname, names, getEmployees }) => {
   const [confirmPopup, setConfirmPopup] = useState(false);
+  const [salaryPopup, setSalaryPopup] = useState(false);
 
   return (
     <>
@@ -133,9 +137,19 @@ const EachEmployeeRow = ({ each, pathname, names, getEmployees }) => {
           each.personalEmail,
           each.contactNumber,
           !pathname.includes('pending') && (
-            <ViewIconButton
-              requestedPath={`/employees/${names[2]}/viewEmployeeDetails/${each.id}`}
-            />
+            <div className="flex items-center gap-1">
+              <ViewIconButton
+                requestedPath={`/employees/${names[2]}/viewEmployeeDetails/${each.id}`}
+              />
+              <IconButton
+                onClick={() => setSalaryPopup(true)}
+                title="Add Salary"
+                aria-label="Add Salary"
+                size="small"
+              >
+                <Icon icon="mdi:cash-plus" color="#f26522" height={22} />
+              </IconButton>
+            </div>
           ),
         ]}
         key={each.id}
@@ -147,6 +161,24 @@ const EachEmployeeRow = ({ each, pathname, names, getEmployees }) => {
             setConfirmPopup={setConfirmPopup}
             getEmployees={getEmployees}
             empId={each.id}
+          />
+        </Popup>
+      )}
+
+      {salaryPopup && (
+        <Popup
+          open={salaryPopup}
+          onClose={() => setSalaryPopup(false)}
+          header="Salary Break Up"
+          maxWidth="sm"
+        >
+          <AddSalaryPopup
+            employeeId={each.id}
+            onClose={() => setSalaryPopup(false)}
+            onSuccess={() => {
+              getEmployees();
+              setSalaryPopup(false);
+            }}
           />
         </Popup>
       )}

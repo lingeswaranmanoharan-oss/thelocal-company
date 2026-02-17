@@ -42,3 +42,30 @@ export const updateEmployementTypeStatus = async (data, id) => {
   return response;
 };
 
+export const getSalaryComponent = async () => {
+  const url = apiEndpoints.getSalaryComponent(getCompanyId());
+  const response = await HttpService.get(url);
+  return response;
+}
+
+export const addSalaryComponent = async (data) => {
+  const response = await HttpService.post(apiEndpoints.addSalaryComponent, {
+    ...data,
+    companyId: getCompanyId(),
+  });
+  return response;
+};
+
+export const getSalaryComponentById = async (id) => {
+  const response = await HttpService.get(apiEndpoints.getSalaryComponentById(id));
+  return response;
+};
+
+export const updateSalaryComponent = async (id, data) => {
+  const response = await HttpService.put(apiEndpoints.updateSalaryComponent(id), {
+    ...data,
+    companyId: getCompanyId(),
+  });
+  return response;
+};
+

@@ -65,6 +65,7 @@ export function Input({
             rest?.onChange?.(e);
             onChange && onChange(e);
           }}
+          onWheel={type === 'number' ? (e) => e.target.blur() : undefined}
           {...rest}
         />
         {showClear && (

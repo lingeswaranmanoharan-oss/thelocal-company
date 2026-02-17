@@ -20,5 +20,12 @@ const apiEndpoints = {
   imageUpload: '/image',
   getCompanyProfile: (id) => `/v1/admin/companies/${id}`,
   generateCompanyAddresses: `/v1/admin/employee-profile`,
+
+
+  getSalaryComponent: (companyId) => `/v1/salary-components/company/${companyId}`,
+  getSalaryComponentById: (id) => `/v1/salary-components/${id}`,
+  addSalaryComponent: `/v1/salary-components`,
+  updateSalaryComponent: (id) => `/v1/salary-components/${id}`,
+
 };
 export default apiEndpoints;

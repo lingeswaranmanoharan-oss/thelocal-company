@@ -31,6 +31,7 @@ const menuConfig = [
       { label: 'Employement-Types', path: '/masters/employement-types' },
       { label: 'Designations', path: '/masters/designations' },
       { label: 'Departments', path: '/masters/departments' },
+      { label: 'Salary component', path: '/masters/salary-component' },
     ],
   },
   {

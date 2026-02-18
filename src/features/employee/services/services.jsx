@@ -38,6 +38,19 @@ export const generateEmpDetails = async (data) => {
   return response;
 };
 
+export const addEmployeeSalary = async (data) => {
+  const response = await HttpService.post(apiEndpoints.addEmployeeSalary, {
+    ...data,
+    companyId: getCompanyId(),
+  });
+  return response;
+};
+
+export const getEmployeeSalary = async (employeeId) => {
+  const response = await HttpService.get(apiEndpoints.getEmployeeSalary(employeeId));
+  return response;
+};
+
 import { useState } from 'react';
 
 const StatusActionBox = ({ status, pathParams, handleUpdateStatus }) => {

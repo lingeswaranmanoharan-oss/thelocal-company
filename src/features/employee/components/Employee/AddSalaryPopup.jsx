@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import * as yup from 'yup';
 import { Input } from '../../../../components/Input/Input';
 import { Button } from '../../../../components/Button/Button';
+import { addEmployeeSalary } from '../../services/services';
+import toaster from '../../../../services/toasterService';
 
 const salaryBreakupSchema = yup.object().shape({
   basic: yup
@@ -127,10 +129,38 @@ const FormRow = ({ label, children, className = '', error }) => (
   </div>
 );
 
-const AddSalaryPopup = ({ employeeId, onClose, onSuccess }) => {
+const mapApiDataToFormData = (data) => {
+  if (!data || typeof data !== 'object') return defaultFormData;
+  const basic = (data.basic) || 0;
+  const form = {
+    basic: basic,
+    houseRentAllowancePct: ((data.hra) || 0) / (basic) * 100,
+    conveyanceAllowancePct: ((data.conveyance) || 0) / (basic) * 100,
+    medicalAllowancePct: ((data.medical) || 0) / (basic) * 100,
+    adhocAllowancePct: ((data.adhoc) || 0) / (basic) * 100,
+    foodAllowancePct: ((data.food) || 0) / (basic) * 100,
+    travelAllowancePct: ((data.travel) || 0) / (basic) * 100,
+    ltaPct: ((data.lta) || 0) / (basic) * 100,
+    bonusPct: ((data.bonus) || 0) / (basic) * 100,
+    employerPf: (data.employerPf),
+    employerEsic: (data.employerEsic),
+    employeePf: (data.employeePf),
+    employeeEsic: (data.employeeEsic),
+    professionTax: (data.professionalTax),
+  };
+  return form;
+};
+
+const AddSalaryPopup = ({ employeeId, onClose, onSuccess, viewMode = false, initialData = null }) => {
   const [formData, setFormData] = useState(defaultFormData);
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (initialData) {
+      setFormData(mapApiDataToFormData(initialData));
+    }
+  }, [initialData]);
 
   const validateField = async (field, value) => {
     try {
@@ -170,15 +200,51 @@ const AddSalaryPopup = ({ employeeId, onClose, onSuccess }) => {
   PERCENTAGE_FIELDS.forEach((field, i) => {
     total += percentageAmounts[PERCENTAGE_FIELDS[i].key];
   })
-
-  // for (let i = 0; i < PERCENTAGE_FIELDS.length; i++) {
-  //   total += percentageAmounts[PERCENTAGE_FIELDS[i].key];
-  // }
+  
   const grossSalary = basic + total;
 
   const { employerPf, employerEsic, employeePf, employeeEsic, professionTax } = formData;
   const ctc = grossSalary + (employerPf || 0) + (employerEsic || 0);
-  const netTakeHome = grossSalary - (employeePf || 0) - (employeeEsic || 0) - (professionTax || 0);
+  const netTakeHome = ctc - (employeePf || 0) - (employeeEsic || 0) - (professionTax || 0);
+
+  const submitSalaryData = async () => {
+    try {
+      const payload = {
+        employeeId: employeeId,
+        basic,
+        hra: percentageAmounts.houseRentAllowancePct ?? 0,
+        conveyance: percentageAmounts.conveyanceAllowancePct ?? 0,
+        medical: percentageAmounts.medicalAllowancePct ?? 0,
+        adhoc: percentageAmounts.adhocAllowancePct ?? 0,
+        food: percentageAmounts.foodAllowancePct ?? 0,
+        travel: percentageAmounts.travelAllowancePct ?? 0,
+        lta: percentageAmounts.ltaPct ?? 0,
+        bonus: percentageAmounts.bonusPct ?? 0,
+        gross: grossSalary,
+        employerPf: employerPf ?? 0,
+        employerEsic: employerEsic ?? 0,
+        employeePf: employeePf ?? 0,
+        employeeEsic: employeeEsic ?? 0,
+        professionalTax: professionTax ?? 0,
+      };
+      const response = await addEmployeeSalary(payload);
+      if (response?.success) {
+        toaster.success(response?.message);
+        onSuccess?.();
+        onClose?.();
+      } else {
+        toaster.error(response?.message);
+      }
+    } catch (error) {
+      if (error.response) {
+        const { message } = error.response.data?.error || {};
+        toaster.error(message);
+      } else if (error.data) {
+        const { message } = error.data.error || {};
+        toaster.error(message);
+      }
+    }
+  };
 
   const handleSubmit = async (e) => {
     e?.preventDefault();
@@ -186,13 +252,12 @@ const AddSalaryPopup = ({ employeeId, onClose, onSuccess }) => {
     setIsLoading(true);
     try {
       await salaryBreakupSchema.validate(formData, { abortEarly: false });
-      onSuccess?.();
-      onClose?.();
+      await submitSalaryData();
     } catch (error) {
       if (error.inner) {
         const validationErrors = {};
-        error.inner.forEach(({ path, message }) => {
-          if (path) validationErrors[path] = message;
+        error.inner.forEach((err) => {
+          if (err.path) validationErrors[err.path] = err.message;
         });
         setErrors(validationErrors);
       }
@@ -203,16 +268,17 @@ const AddSalaryPopup = ({ employeeId, onClose, onSuccess }) => {
 
   return (
     <div className="flex flex-col max-h-[70vh] pt-2">
-      <form className="flex flex-col min-h-0 flex-1 flex" onSubmit={handleSubmit}>
+      <form className="flex flex-col min-h-0 flex-1 flex" onSubmit={viewMode ? (e) => e.preventDefault() : handleSubmit}>
         <div className="flex-1 overflow-y-auto min-h-0 space-y-1">
           <FormRow label="Basic">
             <Input
               type="number"
               min={0}
               value={formData.basic ?? ''}
-              onChange={(e) => handleNumberChange('basic', e)}
+              onChange={(e) => !viewMode && handleNumberChange('basic', e)}
               error={errors.basic}
               className="max-w-[140px]"
+              disabled={viewMode}
             />
           </FormRow>
           {PERCENTAGE_FIELDS.map(({ key, label }) => (
@@ -222,9 +288,10 @@ const AddSalaryPopup = ({ employeeId, onClose, onSuccess }) => {
                 min={0}
                 max={100}
                 value={formData[key] ?? ''}
-                onChange={(e) => handleNumberChange(key, e)}
+                onChange={(e) => !viewMode && handleNumberChange(key, e)}
                 className="min-w-[120px] w-[120px]"
                 rightIcon={<span className="text-gray-500 text-sm font-medium">%</span>}
+                disabled={viewMode}
               />
               <Input
                 type="number"
@@ -247,8 +314,9 @@ const AddSalaryPopup = ({ employeeId, onClose, onSuccess }) => {
               type="number"
               min={0}
               value={formData.employerPf ?? ''}
-              onChange={(e) => handleNumberChange('employerPf', e)}
+              onChange={(e) => !viewMode && handleNumberChange('employerPf', e)}
               className="max-w-[140px]"
+              disabled={viewMode}
             />
           </FormRow>
           <FormRow label="Employers cont. to ESIC" error={errors.employerEsic}>
@@ -256,8 +324,9 @@ const AddSalaryPopup = ({ employeeId, onClose, onSuccess }) => {
               type="number"
               min={0}
               value={formData.employerEsic ?? ''}
-              onChange={(e) => handleNumberChange('employerEsic', e)}
+              onChange={(e) => !viewMode && handleNumberChange('employerEsic', e)}
               className="max-w-[140px]"
+              disabled={viewMode}
             />
           </FormRow>
           <FormRow label="Cost to Company (CTC) per month">
@@ -274,8 +343,9 @@ const AddSalaryPopup = ({ employeeId, onClose, onSuccess }) => {
               type="number"
               min={0}
               value={formData.employeePf ?? ''}
-              onChange={(e) => handleNumberChange('employeePf', e)}
+              onChange={(e) => !viewMode && handleNumberChange('employeePf', e)}
               className="max-w-[140px]"
+              disabled={viewMode}
             />
           </FormRow>
           <FormRow label="Employees cont. to ESIC" error={errors.employeeEsic}>
@@ -283,8 +353,9 @@ const AddSalaryPopup = ({ employeeId, onClose, onSuccess }) => {
               type="number"
               min={0}
               value={formData.employeeEsic ?? ''}
-              onChange={(e) => handleNumberChange('employeeEsic', e)}
+              onChange={(e) => !viewMode && handleNumberChange('employeeEsic', e)}
               className="max-w-[140px]"
+              disabled={viewMode}
             />
           </FormRow>
           <FormRow label="Profession Tax" error={errors.professionTax}>
@@ -292,8 +363,9 @@ const AddSalaryPopup = ({ employeeId, onClose, onSuccess }) => {
               type="number"
               min={0}
               value={formData.professionTax ?? ''}
-              onChange={(e) => handleNumberChange('professionTax', e)}
+              onChange={(e) => !viewMode && handleNumberChange('professionTax', e)}
               className="max-w-[140px]"
+              disabled={viewMode}
             />
           </FormRow>
           <FormRow label="Net take home salary monthly">
@@ -303,12 +375,20 @@ const AddSalaryPopup = ({ employeeId, onClose, onSuccess }) => {
         </div>
 
         <div className="flex-shrink-0 flex justify-end gap-3 pt-4 mt-4 border-t border-gray-200">
-          <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>
-            Cancel
-          </Button>
-          <Button type="submit" variant="primary" disabled={isLoading}>
-            {isLoading ? 'Saving...' : 'Save'}
-          </Button>
+          {viewMode ? (
+            <Button type="button" variant="primary" onClick={onClose}>
+              Close
+            </Button>
+          ) : (
+            <>
+              <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>
+                Cancel
+              </Button>
+              <Button type="submit" variant="primary" disabled={isLoading}>
+                {isLoading ? 'Saving...' : 'Save'}
+              </Button>
+            </>
+          )}
         </div>
       </form>
     </div>

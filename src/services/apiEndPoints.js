@@ -27,5 +27,7 @@ const apiEndpoints = {
   addSalaryComponent: `/v1/salary-components`,
   updateSalaryComponent: (id) => `/v1/salary-components/${id}`,
 
+  addEmployeeSalary: `/v1/salary`,
+  getEmployeeSalary: (employeeId) => `/v1/salary/employee/${employeeId}`,
 };
 export default apiEndpoints;

@@ -16,7 +16,7 @@ import { Link } from 'react-router-dom';
 import useRouteInformation from '../../../../hooks/useRouteInformation';
 import toaster from '../../../../services/toasterService';
 import Popup from '../../../../components/Popup/Popup';
-import { generateEmpDetails } from '../../services/services';
+import { generateEmpDetails, getEmployeeSalary } from '../../services/services';
 import AddSalaryPopup from './AddSalaryPopup';
 import { Input } from '../../../../components/Input/Input';
 import DateInput from '../../../../components/DateInput/DateInput';
@@ -116,6 +116,26 @@ const EmployeeEdit = ({ getEmployees, empId }) => {
 const EachEmployeeRow = ({ each, pathname, names, getEmployees }) => {
   const [confirmPopup, setConfirmPopup] = useState(false);
   const [salaryPopup, setSalaryPopup] = useState(false);
+  const [salaryInitialData, setSalaryInitialData] = useState(null);
+
+  const handleOpenAddSalary = async () => {
+    let data = null;
+    try {
+      const response = await getEmployeeSalary(each.id);
+      if (response?.success) {
+        data = response?.data;
+      }
+    } catch {
+      data = null;
+    }
+    setSalaryInitialData(data);
+    setSalaryPopup(true);
+  };
+
+  const handleCloseSalaryPopup = () => {
+    setSalaryPopup(false);
+    setSalaryInitialData(null);
+  };
 
   return (
     <>
@@ -142,7 +162,7 @@ const EachEmployeeRow = ({ each, pathname, names, getEmployees }) => {
                 requestedPath={`/employees/${names[2]}/viewEmployeeDetails/${each.id}`}
               />
               <IconButton
-                onClick={() => setSalaryPopup(true)}
+                onClick={handleOpenAddSalary}
                 title="Add Salary"
                 aria-label="Add Salary"
                 size="small"
@@ -168,17 +188,18 @@ const EachEmployeeRow = ({ each, pathname, names, getEmployees }) => {
       {salaryPopup && (
         <Popup
           open={salaryPopup}
-          onClose={() => setSalaryPopup(false)}
+          onClose={handleCloseSalaryPopup}
           header="Salary Break Up"
           maxWidth="sm"
         >
           <AddSalaryPopup
             employeeId={each.id}
-            onClose={() => setSalaryPopup(false)}
+            onClose={handleCloseSalaryPopup}
             onSuccess={() => {
               getEmployees();
-              setSalaryPopup(false);
+              handleCloseSalaryPopup();
             }}
+            initialData={salaryInitialData}
           />
         </Popup>
       )}

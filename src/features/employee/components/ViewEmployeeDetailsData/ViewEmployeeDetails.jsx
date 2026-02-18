@@ -9,6 +9,9 @@ import apiEndpoints from '../../../../services/apiEndPoints';
 import toaster from '../../../../services/toasterService';
 import useRouteInformation from '../../../../hooks/useRouteInformation';
 import { getDateToDDMMYYYYformat } from '../../../../utils/functions';
+import Popup from '../../../../components/Popup/Popup';
+import AddSalaryPopup from '../Employee/AddSalaryPopup';
+import { getEmployeeSalary } from '../../services/services';
 import './ViewEmployeeDetails.scss';
 
 const empProjects = [
@@ -62,6 +65,9 @@ const ViewEmployeesDetail = () => {
     const { pathParams } = useRouteInformation();
     const [data, setData] = useState(null);
     const [error, setError] = useState(null);
+    const [salaryPopupOpen, setSalaryPopupOpen] = useState(false);
+    const [salaryData, setSalaryData] = useState(null);
+    const [salaryError, setSalaryError] = useState(null);
 
     const getEmployeeDetails = useCallback(async () => {
         if (!pathParams?.companyId) return;
@@ -92,12 +98,39 @@ const ViewEmployeesDetail = () => {
     useEffect(() => {
         getEmployeeDetails();
     }, [getEmployeeDetails]);
+
+    const fetchSalaryOnLoad = useCallback(async () => {
+        if (!pathParams?.companyId) return;
+        setSalaryError(null);
+        setSalaryData(null);
+        try {
+            const response = await getEmployeeSalary(pathParams.companyId);
+            if (response?.success) {
+                setSalaryData(response?.data);
+            } else {
+                setSalaryError(response?.message);
+            }
+        } catch (err) {
+            const message = err?.data?.error?.message;
+            setSalaryError(message);
+            setSalaryData(null);
+        }
+    }, [pathParams?.companyId]);
+
+    useEffect(() => {
+        fetchSalaryOnLoad();
+    }, [fetchSalaryOnLoad]);
+
     const handleViewDocument = (url) => {
         if (!url) {
             toaster.error("Document not available");
             return;
         }
         window.open(url, "_blank", "noopener,noreferrer");
+    };
+
+    const handleViewSalary = () => {
+        setSalaryPopupOpen(true);
     };
 
 
@@ -325,13 +358,29 @@ const ViewEmployeesDetail = () => {
                         </tbody>
                     </table>
                 </Accordion>
+                <Accordion title="Salary">
+                    <div className="flex items-center justify-between gap-2">
+                        <span className="text-gray-600 text-sm">Salary details</span>
+                        {salaryError ? (
+                            <p className="text-sm text-red-600 m-0">{salaryError}</p>
+                        ) : (
+                            <Icon
+                                icon="mdi:eye-outline"
+                                style={{ color: '#f26522' }}
+                                className="cursor-pointer w-5 h-5 flex-shrink-0"
+                                onClick={handleViewSalary}
+                                title="View salary"
+                            />
+                        )}
+                    </div>
+                </Accordion>
                 <Accordion title="Documents">
                     <table className="family-table">
                         <thead>
                             <tr>
                                 <th>Document Name</th>
                                 <th>Documents Number</th>
-                                <th style={{ textAlign: "center" }}>View</th>
+                                <th>View</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -340,7 +389,7 @@ const ViewEmployeesDetail = () => {
                                     <tr key={i}>
                                         <td>{row.documentName || '--'}</td>
                                         <td>{row.documentNumber || '--'}</td>
-                                        <td style={{ textAlign: "center" }}>
+                                        <td>
                                             <Icon
                                                 icon="mdi:eye-outline"
                                                 style={{ color: "#dc2626" }}
@@ -549,6 +598,28 @@ const ViewEmployeesDetail = () => {
                     )}
                 </div>
             </div>
+
+            {salaryPopupOpen && (
+                <Popup
+                    open={salaryPopupOpen}
+                    onClose={() => {
+                        setSalaryPopupOpen(false);
+                        setSalaryData(null);
+                    }}
+                    header="Salary Break Up"
+                    maxWidth="sm"
+                >
+                    <AddSalaryPopup
+                        employeeId={pathParams?.companyId}
+                        onClose={() => {
+                            setSalaryPopupOpen(false);
+                            setSalaryData(null);
+                        }}
+                        viewMode
+                        initialData={salaryData}
+                    />
+                </Popup>
+            )}
         </div>
     );
 };

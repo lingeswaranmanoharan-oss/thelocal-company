@@ -12,13 +12,25 @@ const resetSchema = yup.object().shape({
   newPassword: yup
     .string()
     .required('New Password is required')
-    .min(6, 'Password must be at least 6 characters'),
-
+    .min(8, 'Password must be at least 8 characters')
+    .matches(/[A-Z]/, 'Password must contain at least one uppercase letter')
+    .matches(/[0-9]/, 'Password must contain at least one number')
+    .matches(/[^A-Za-z0-9]/, 'Password must contain at least one special character'),
   confirmPassword: yup
     .string()
     .required('Confirm Password is required')
     .oneOf([yup.ref('newPassword')], 'Passwords must match'),
+
 });
+const calculateStrength = (password) => {
+  if (!password) return 0;
+  let strength = 0;
+  if (password.length >= 8) strength++;
+  if (/[A-Z]/.test(password)) strength++;
+  if (/[0-9]/.test(password)) strength++;
+  if (/[^A-Za-z0-9]/.test(password)) strength++;
+  return strength;
+};
 
 const ResetPassword = ({ token }) => {
   console.log('TOKEN:', token);
@@ -27,7 +39,7 @@ const ResetPassword = ({ token }) => {
     newPassword: '',
     confirmPassword: '',
   });
-
+  const [passwordStrength, setPasswordStrength] = useState(0);
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const validateField = async (field, value) => {
@@ -40,14 +52,21 @@ const ResetPassword = ({ token }) => {
     }
   };
 
-  const isFormValid =
-    formData.newPassword &&
-    formData.confirmPassword &&
-    !errors.newPassword &&
-    !errors.confirmPassword;
+
   const handleChange = async (field, value) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    await validateField(field, value);
+    // setFormData((prev) => ({ ...prev, [field]: value }));
+    const updated = { ...formData, [field]: value };
+    setFormData(updated);
+    if (field === 'newPassword') {
+      setPasswordStrength(calculateStrength(value));
+    }
+    try {
+      await resetSchema.validateAt(field, updated);
+      setErrors((prev) => ({ ...prev, [field]: '' }));
+    } catch (err) {
+      setErrors((prev) => ({ ...prev, [field]: err.message }));
+    }
+    // await validateField(field, value);
   };
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -87,7 +106,6 @@ const ResetPassword = ({ token }) => {
     }
   };
 
-  const emailIcon = <Icon icon="mdi:email-outline" className="w-5 h-5 text-gray-500" />;
 
   return (
     <form className="login-form">
@@ -106,6 +124,37 @@ const ResetPassword = ({ token }) => {
           error={errors.newPassword}
           showPasswordToggle={true}
         />
+        <div className="password-strength">
+          {[1, 2, 3, 4].map((level) => (
+            <span
+              key={level}
+              className={`strength-meter ${passwordStrength >= level ? 'active' : ''}`}
+              data-level={level}
+            ></span>
+          ))}
+          <span className="strength-text">
+            {passwordStrength === 0
+              ? 'Weak'
+              : passwordStrength <= 2
+                ? 'Medium'
+                : 'Strong'}
+          </span>
+        </div>
+
+        <ul className="password-requirements mb-2">
+          <li className={formData.newPassword.length >= 8 ? 'met' : 'unmet'}>
+            At least 8 characters
+          </li>
+          <li className={/[A-Z]/.test(formData.newPassword) ? 'met' : 'unmet'}>
+            1 uppercase letter
+          </li>
+          <li className={/[0-9]/.test(formData.newPassword) ? 'met' : 'unmet'}>
+            1 number
+          </li>
+          <li className={/[^A-Za-z0-9]/.test(formData.newPassword) ? 'met' : 'unmet'}>
+            1 special character
+          </li>
+        </ul>
 
         <Input
           id="confirmPassword"
@@ -116,6 +165,12 @@ const ResetPassword = ({ token }) => {
           error={errors.confirmPassword}
           showPasswordToggle={true}
         />
+
+        {formData.confirmPassword &&
+          formData.confirmPassword === formData.newPassword && (
+            <p className="match-indicator">Passwords matched</p>
+          )}
+
       </div>
       {errors.submit && <p className="text-red-500 text-sm">{errors.submit}</p>}
 
@@ -124,9 +179,9 @@ const ResetPassword = ({ token }) => {
         variant="primary"
         className="login-submit-button w-full"
         onClick={handleSubmit}
-        // disabled={!isFormValid}
+      // disabled={!isFormValid}
       >
-        Submit
+        {isLoading ? 'Saving...' : 'Submit'}
       </Button>
     </form>
   );

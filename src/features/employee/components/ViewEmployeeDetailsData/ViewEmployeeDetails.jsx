@@ -602,19 +602,13 @@ const ViewEmployeesDetail = () => {
             {salaryPopupOpen && (
                 <Popup
                     open={salaryPopupOpen}
-                    onClose={() => {
-                        setSalaryPopupOpen(false);
-                        setSalaryData(null);
-                    }}
+                    onClose={() => setSalaryPopupOpen(false)}
                     header="Salary Break Up"
                     maxWidth="sm"
                 >
                     <AddSalaryPopup
                         employeeId={pathParams?.companyId}
-                        onClose={() => {
-                            setSalaryPopupOpen(false);
-                            setSalaryData(null);
-                        }}
+                        onClose={() => setSalaryPopupOpen(false)}
                         viewMode
                         initialData={salaryData}
                     />

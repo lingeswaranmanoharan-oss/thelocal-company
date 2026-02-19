@@ -1,0 +1,80 @@
+.generate-payslip {
+  &-paper {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  &-logo {
+    min-width: 4rem;
+    min-height: 4rem;
+  }
+
+  &-details {
+    border-radius: 0;
+
+    .generate-payslip-col {
+      min-height: 1px;
+    }
+  }
+
+  &-table {
+    position: relative;
+    border-radius: 0;
+    overflow: visible;
+
+    .generate-payslip-table-center-line {
+      position: absolute;
+      left: 50%;
+      top: 0;
+      bottom: 0;
+      width: 0;
+      margin-left: -1px;
+      border-left: 1px solid #000;
+      border-radius: 0;
+      pointer-events: none;
+      transform: translateZ(0);
+    }
+
+    .generate-payslip-table-th-earnings,
+    .generate-payslip-table-td-earnings {
+      border-right: none !important;
+    }
+
+    .generate-payslip-table-th-actual,
+    .generate-payslip-table-td-actual {
+      border-right: none !important;
+    }
+
+    .generate-payslip-table-th-deductions,
+    .generate-payslip-table-td-deductions {
+      border-right: none !important;
+    }
+
+    table {
+      table-layout: fixed;
+    }
+
+    .generate-payslip-table-colgroup {
+      col:nth-child(1) { width: 24%; }
+      col:nth-child(2) { width: 13%; }
+      col:nth-child(3) { width: 13%; }
+      col:nth-child(4) { width: 25%; }
+      col:nth-child(5) { width: 25%; }
+    }
+  }
+
+  &-netpay {
+    background: #fff;
+  }
+
+  @media print {
+    .generate-payslip {
+      padding: 0;
+      max-width: none;
+    }
+
+    .generate-payslip-paper {
+      box-shadow: none;
+      border: 1px solid #000;
+    }
+  }
+}

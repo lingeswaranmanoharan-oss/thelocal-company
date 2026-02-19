@@ -5,111 +5,121 @@ import { Button } from '../../../../components/Button/Button';
 import { addEmployeeSalary } from '../../services/services';
 import toaster from '../../../../services/toasterService';
 
+const basciMaxDigit = 999999999
+const maxDigit = 99999999
+
 const salaryBreakupSchema = yup.object().shape({
   basic: yup
     .number()
     .nullable()
     .required('Basic is required')
-    .min(0, 'Basic must be 0 or greater'),
+    .min(0, 'Basic must be 0 or greater')
+    .max(basciMaxDigit, 'Basic must not exceed 9 digits'),
   houseRentAllowancePct: yup
     .number()
     .nullable()
     .required('House Rent Allowance is required')
     .min(0, 'House Rent Allowance must be 0 or greater')
     .max(100, 'House Rent Allowance must not exceed 100'),
-  conveyanceAllowancePct: yup
+  conveyance: yup
     .number()
     .nullable()
     .required('Conveyance Allowance is required')
     .min(0, 'Conveyance Allowance must be 0 or greater')
-    .max(100, 'Conveyance Allowance must not exceed 100'),
-  medicalAllowancePct: yup
+    .max(maxDigit, 'Conveyance Allowance must not exceed 8 digits'),
+  medical: yup
     .number()
     .nullable()
     .required('Medical Allowance is required')
     .min(0, 'Medical Allowance must be 0 or greater')
-    .max(100, 'Medical Allowance must not exceed 100'),
-  adhocAllowancePct: yup
+    .max(maxDigit, 'Medical Allowance must not exceed 8 digits'),
+  adhoc: yup
     .number()
     .nullable()
     .required('Adhoc Allowance is required')
     .min(0, 'Adhoc Allowance must be 0 or greater')
-    .max(100, 'Adhoc Allowance must not exceed 100'),
-  foodAllowancePct: yup
+    .max(maxDigit, 'Adhoc Allowance must not exceed 8 digits'),
+  food: yup
     .number()
     .nullable()
     .required('Food Allowance is required')
     .min(0, 'Food Allowance must be 0 or greater')
-    .max(100, 'Food Allowance must not exceed 100'),
-  travelAllowancePct: yup
+    .max(maxDigit, 'Food Allowance must not exceed 8 digits'),
+  travel: yup
     .number()
     .nullable()
     .required('Travel Allowance is required')
     .min(0, 'Travel Allowance must be 0 or greater')
-    .max(100, 'Travel Allowance must not exceed 100'),
-  ltaPct: yup
+    .max(maxDigit, 'Travel Allowance must not exceed 8 digits'),
+  lta: yup
     .number()
     .nullable()
     .required('LTA (Leave Travel Allowance) is required')
     .min(0, 'LTA (Leave Travel Allowance) must be 0 or greater')
-    .max(100, 'LTA (Leave Travel Allowance) must not exceed 100'),
-  bonusPct: yup
+    .max(maxDigit, 'LTA (Leave Travel Allowance) must not exceed 8 digits'),
+  bonus: yup
     .number()
     .nullable()
     .required('Bonus is required')
     .min(0, 'Bonus must be 0 or greater')
-    .max(100, 'Bonus must not exceed 100'),
-  employerPf: yup
+    .max(maxDigit, 'Bonus must not exceed 8 digits'),
+  employerPfPct: yup
     .number()
     .nullable()
-    .required('Employers cont. to Provident Fund is required')
-    .min(0, 'Employers cont. to Provident Fund must be 0 or greater'),
+    .required('Employers cont. to Provident Fund (%) is required')
+    .min(0, 'Employers cont. to Provident Fund must be 0 or greater')
+    .max(100, 'Employers cont. to Provident Fund must not exceed 100'),
+  employeePfPct: yup
+    .number()
+    .nullable()
+    .required('Employees cont. to Provident Fund (%) is required')
+    .min(0, 'Employees cont. to Provident Fund must be 0 or greater')
+    .max(100, 'Employees cont. to Provident Fund must not exceed 100'),
   employerEsic: yup
     .number()
     .nullable()
     .required('Employers cont. to ESIC is required')
-    .min(0, 'Employers cont. to ESIC must be 0 or greater'),
-  employeePf: yup
-    .number()
-    .nullable()
-    .required('Employees cont. to Provident Fund is required')
-    .min(0, 'Employees cont. to Provident Fund must be 0 or greater'),
+    .min(0, 'Employers cont. to ESIC must be 0 or greater')
+    .max(maxDigit, 'Employers cont. to ESIC must not exceed 8 digits'),
   employeeEsic: yup
     .number()
     .nullable()
     .required('Employees cont. to ESIC is required')
-    .min(0, 'Employees cont. to ESIC must be 0 or greater'),
+    .min(0, 'Employees cont. to ESIC must be 0 or greater')
+    .max(maxDigit, 'Employees cont. to ESIC must not exceed 8 digits'),
   professionTax: yup
     .number()
     .nullable()
     .required('Profession Tax is required')
-    .min(0, 'Profession Tax must be 0 or greater'),
+    .min(0, 'Profession Tax must be 0 or greater')
+    .max(maxDigit, 'Profession Tax must not exceed 8 digits'),
 });
 
-const PERCENTAGE_FIELDS = [
-  { key: 'houseRentAllowancePct', label: 'House Rent Allowance' },
-  { key: 'conveyanceAllowancePct', label: 'Conveyance Allowance' },
-  { key: 'medicalAllowancePct', label: 'Medical Allowance' },
-  { key: 'adhocAllowancePct', label: 'Adhoc Allowance' },
-  { key: 'foodAllowancePct', label: 'Food Allowance' },
-  { key: 'travelAllowancePct', label: 'Travel Allowance' },
-  { key: 'ltaPct', label: 'LTA (Leave Travel Allowance)' },
-  { key: 'bonusPct', label: 'Bonus' },
+const HRA_PCT_FIELD = { key: 'houseRentAllowancePct', label: 'House Rent Allowance' };
+
+const MANUAL_AMOUNT_FIELDS = [
+  { key: 'conveyance', label: 'Conveyance Allowance' },
+  { key: 'medical', label: 'Medical Allowance' },
+  { key: 'adhoc', label: 'Adhoc Allowance' },
+  { key: 'food', label: 'Food Allowance' },
+  { key: 'travel', label: 'Travel Allowance' },
+  { key: 'lta', label: 'LTA (Leave Travel Allowance)' },
+  { key: 'bonus', label: 'Bonus' },
 ];
 
 const defaultFormData = {
   basic: null,
   houseRentAllowancePct: null,
-  conveyanceAllowancePct: null,
-  medicalAllowancePct: null,
-  adhocAllowancePct: null,
-  foodAllowancePct: null,
-  travelAllowancePct: null,
-  ltaPct: null,
-  bonusPct: null,
-  employerPf: null,
+  conveyance: null,
+  medical: null,
+  adhoc: null,
+  food: null,
+  travel: null,
+  lta: null,
+  bonus: null,
+  employerPfPct: null,
+  employeePfPct: null,
   employerEsic: null,
-  employeePf: null,
   employeeEsic: null,
   professionTax: null,
 };
@@ -131,22 +141,22 @@ const FormRow = ({ label, children, className = '', error }) => (
 
 const mapApiDataToFormData = (data) => {
   if (!data || typeof data !== 'object') return defaultFormData;
-  const basic = (data.basic) || 0;
+  const basic = data.basic || 0;
   const form = {
-    basic: basic,
-    houseRentAllowancePct: ((data.hra) || 0) / (basic) * 100,
-    conveyanceAllowancePct: ((data.conveyance) || 0) / (basic) * 100,
-    medicalAllowancePct: ((data.medical) || 0) / (basic) * 100,
-    adhocAllowancePct: ((data.adhoc) || 0) / (basic) * 100,
-    foodAllowancePct: ((data.food) || 0) / (basic) * 100,
-    travelAllowancePct: ((data.travel) || 0) / (basic) * 100,
-    ltaPct: ((data.lta) || 0) / (basic) * 100,
-    bonusPct: ((data.bonus) || 0) / (basic) * 100,
-    employerPf: (data.employerPf),
-    employerEsic: (data.employerEsic),
-    employeePf: (data.employeePf),
-    employeeEsic: (data.employeeEsic),
-    professionTax: (data.professionalTax),
+    basic,
+    houseRentAllowancePct: ((data.hra) || 0) / basic * 100,
+    conveyance: data.conveyance ?? null,
+    medical: data.medical ?? null,
+    adhoc: data.adhoc ?? null,
+    food: data.food ?? null,
+    travel: data.travel ?? null,
+    lta: data.lta ?? null,
+    bonus: data.bonus ?? null,
+    employerPfPct: (data.employerPf / basic) * 100,
+    employeePfPct: (data.employeePf / basic) * 100 ,
+    employerEsic: data.employerEsic ?? null,
+    employeeEsic: data.employeeEsic ?? null,
+    professionTax: data.professionalTax ?? null,
   };
   return form;
 };
@@ -188,42 +198,41 @@ const AddSalaryPopup = ({ employeeId, onClose, onSuccess, viewMode = false, init
   };
 
   const basic = formData.basic || 0;
+  const hraAmount = Math.round((basic * (formData.houseRentAllowancePct || 0)) / 100);
+  const employerPfAmount = Math.round((basic * (formData.employerPfPct || 0)) / 100);
+  const employeePfAmount = Math.round((basic * (formData.employeePfPct || 0)) / 100);
 
-  const percentageAmounts = {};
+  const allowanceTotal =
+    (formData.conveyance || 0) +
+    (formData.medical || 0) +
+    (formData.adhoc || 0) +
+    (formData.food || 0) +
+    (formData.travel || 0) +
+    (formData.lta || 0) +
+    (formData.bonus || 0);
+  const grossSalary = basic + hraAmount + allowanceTotal;
 
-  PERCENTAGE_FIELDS.forEach((field) => {
-    percentageAmounts[field.key] = Math.round((basic * (formData[field.key] || 0)) / 100);
-  })
-
-  var total = 0;
-
-  PERCENTAGE_FIELDS.forEach((field, i) => {
-    total += percentageAmounts[PERCENTAGE_FIELDS[i].key];
-  })
-  
-  const grossSalary = basic + total;
-
-  const { employerPf, employerEsic, employeePf, employeeEsic, professionTax } = formData;
-  const ctc = grossSalary + (employerPf || 0) + (employerEsic || 0);
-  const netTakeHome = ctc - (employeePf || 0) - (employeeEsic || 0) - (professionTax || 0);
+  const { employerEsic, employeeEsic, professionTax } = formData;
+  const ctc = grossSalary + employerPfAmount + (employerEsic || 0);
+  const netTakeHome = ctc - employeePfAmount - (employeeEsic || 0) - (professionTax || 0);
 
   const submitSalaryData = async () => {
     try {
       const payload = {
         employeeId: employeeId,
         basic,
-        hra: percentageAmounts.houseRentAllowancePct ?? 0,
-        conveyance: percentageAmounts.conveyanceAllowancePct ?? 0,
-        medical: percentageAmounts.medicalAllowancePct ?? 0,
-        adhoc: percentageAmounts.adhocAllowancePct ?? 0,
-        food: percentageAmounts.foodAllowancePct ?? 0,
-        travel: percentageAmounts.travelAllowancePct ?? 0,
-        lta: percentageAmounts.ltaPct ?? 0,
-        bonus: percentageAmounts.bonusPct ?? 0,
+        hra: hraAmount,
+        conveyance: formData.conveyance ?? 0,
+        medical: formData.medical ?? 0,
+        adhoc: formData.adhoc ?? 0,
+        food: formData.food ?? 0,
+        travel: formData.travel ?? 0,
+        lta: formData.lta ?? 0,
+        bonus: formData.bonus ?? 0,
         gross: grossSalary,
-        employerPf: employerPf ?? 0,
+        employerPf: employerPfAmount,
         employerEsic: employerEsic ?? 0,
-        employeePf: employeePf ?? 0,
+        employeePf: employeePfAmount,
         employeeEsic: employeeEsic ?? 0,
         professionalTax: professionTax ?? 0,
       };
@@ -281,23 +290,33 @@ const AddSalaryPopup = ({ employeeId, onClose, onSuccess, viewMode = false, init
               disabled={viewMode}
             />
           </FormRow>
-          {PERCENTAGE_FIELDS.map(({ key, label }) => (
+          <FormRow label={HRA_PCT_FIELD.label} error={errors.houseRentAllowancePct}>
+            <Input
+              type="number"
+              min={0}
+              max={100}
+              value={formData.houseRentAllowancePct ?? ''}
+              onChange={(e) => !viewMode && handleNumberChange('houseRentAllowancePct', e)}
+              className="min-w-[120px] w-[120px]"
+              rightIcon={<span className="text-gray-500 text-sm font-medium">%</span>}
+              disabled={viewMode}
+            />
+            <Input
+              type="number"
+              value={hraAmount ?? ''}
+              disabled
+              className="max-w-[140px] bg-gray-100"
+            />
+          </FormRow>
+          {MANUAL_AMOUNT_FIELDS.map(({ key, label }) => (
             <FormRow key={key} label={label} error={errors[key]}>
               <Input
                 type="number"
                 min={0}
-                max={100}
                 value={formData[key] ?? ''}
                 onChange={(e) => !viewMode && handleNumberChange(key, e)}
-                className="min-w-[120px] w-[120px]"
-                rightIcon={<span className="text-gray-500 text-sm font-medium">%</span>}
+                className="max-w-[140px]"
                 disabled={viewMode}
-              />
-              <Input
-                type="number"
-                value={percentageAmounts[key] ?? ''}
-                disabled
-                className="max-w-[140px] bg-gray-100"
               />
             </FormRow>
           ))}
@@ -309,14 +328,22 @@ const AddSalaryPopup = ({ employeeId, onClose, onSuccess, viewMode = false, init
 
         <div className="text-sm font-medium text-gray-700 mb-2">Add:</div>
         <div className="space-y-1">
-          <FormRow label="Employers cont. to Provident Fund" error={errors.employerPf}>
+          <FormRow label="Employers cont. to Provident Fund" error={errors.employerPfPct}>
             <Input
               type="number"
               min={0}
-              value={formData.employerPf ?? ''}
-              onChange={(e) => !viewMode && handleNumberChange('employerPf', e)}
-              className="max-w-[140px]"
+              max={100}
+              value={formData.employerPfPct ?? ''}
+              onChange={(e) => !viewMode && handleNumberChange('employerPfPct', e)}
+              className="min-w-[120px] w-[120px]"
+              rightIcon={<span className="text-gray-500 text-sm font-medium">%</span>}
               disabled={viewMode}
+            />
+            <Input
+              type="number"
+              value={employerPfAmount ?? ''}
+              disabled
+              className="max-w-[140px] bg-gray-100"
             />
           </FormRow>
           <FormRow label="Employers cont. to ESIC" error={errors.employerEsic}>
@@ -338,14 +365,22 @@ const AddSalaryPopup = ({ employeeId, onClose, onSuccess, viewMode = false, init
 
         <div className="text-sm font-medium text-gray-700 mb-2">Less:</div>
         <div className="space-y-1">
-          <FormRow label="Employees cont. to Provident Fund" error={errors.employeePf}>
+          <FormRow label="Employees cont. to Provident Fund" error={errors.employeePfPct}>
             <Input
               type="number"
               min={0}
-              value={formData.employeePf ?? ''}
-              onChange={(e) => !viewMode && handleNumberChange('employeePf', e)}
-              className="max-w-[140px]"
+              max={100}
+              value={formData.employeePfPct ?? ''}
+              onChange={(e) => !viewMode && handleNumberChange('employeePfPct', e)}
+              className="min-w-[120px] w-[120px]"
+              rightIcon={<span className="text-gray-500 text-sm font-medium">%</span>}
               disabled={viewMode}
+            />
+            <Input
+              type="number"
+              value={employeePfAmount ?? ''}
+              disabled
+              className="max-w-[140px] bg-gray-100"
             />
           </FormRow>
           <FormRow label="Employees cont. to ESIC" error={errors.employeeEsic}>

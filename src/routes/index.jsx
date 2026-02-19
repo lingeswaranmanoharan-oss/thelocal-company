@@ -19,6 +19,7 @@ import SalaryComponentFormPage from '../pages/masters/salary-component/SalaryCom
 import HolidaysPage from '../pages/holidays/HolidaysPage';
 import EmployeeEditPage from '../pages/Employee/employee_edit_page';
 import ChangePasswordPage from '../pages/auth/ChangePasswordPage';
+import GeneratePayslipPage from '../pages/payroll/GeneratePayslipPage';
 
 export const router = createBrowserRouter([
   {
@@ -139,6 +140,10 @@ export const router = createBrowserRouter([
       {
         path: 'pay-slip',
         element: <PaySlip />,
+      },
+      {
+        path: 'generate-payslip',
+        element: <GeneratePayslipPage />,
       }
     ],
   },

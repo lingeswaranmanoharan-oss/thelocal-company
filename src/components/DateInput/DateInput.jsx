@@ -20,6 +20,7 @@ export default function DateInput({
   value,
   readOnly,
   error,
+  views
 }) {
   return (
     <div className={clsx('input-wrapper', className)}>
@@ -36,6 +37,7 @@ export default function DateInput({
             format={format}
             minDate={minDate ? dayjs(minDate) : null}
             maxDate={maxDate ? dayjs(maxDate) : null}
+            views={views}
             slotProps={{
               textField: {
                 size: 'small',

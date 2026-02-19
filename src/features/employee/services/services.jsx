@@ -37,6 +37,15 @@ export const generateEmpDetails = async (data) => {
   const response = await HttpService.put(apiEndpoints.generateCompanyAddresses, data);
   return response;
 };
+export const getEmpById = async (id) => {
+  const url = apiEndpoints.getEmployeeReqDetails(id);
+  const response = await HttpService.get(url);
+  return response;
+};
+export const putEmpData = async (id, data) => {
+  const response = await HttpService.put(apiEndpoints.updateEmployeeDetails(id), data);
+  return response;
+};
 
 export const addEmployeeSalary = async (data) => {
   const response = await HttpService.post(apiEndpoints.addEmployeeSalary, {

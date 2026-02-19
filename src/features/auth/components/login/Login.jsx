@@ -4,12 +4,14 @@ import { Button } from '../../../../components/Button/Button';
 import { Input } from '../../../../components/Input/Input';
 import './Login.scss';
 import { Icon } from '@iconify/react';
-import { signIn } from '../../services/authService';
+import { signIn, signOut } from '../../services/authService';
 import { useNavigate } from 'react-router-dom';
 import toaster from '../../../../services/toasterService';
 import { useAuth } from '../../../../context/AuthContext';
 import StorageService from '../../../../services/storageService';
 import { setAccessToken } from '../../../../services/httpService';
+import { getAuthTokenDetails } from '../../../../utils/functions';
+import useRouteInformation from '../../../../hooks/useRouteInformation';
 
 const loginSchema = yup.object().shape({
   username: yup.string().required('User Name is required'),
@@ -21,6 +23,7 @@ const loginSchema = yup.object().shape({
 
 const Login = () => {
   const { setToken } = useAuth();
+  const { queryParams } = useRouteInformation();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     username: '',
@@ -48,10 +51,16 @@ const Login = () => {
       const sigInResponse = await signIn(formData);
       if (sigInResponse) {
         const { accessToken } = sigInResponse.data;
-        setAccessToken(accessToken);
-        setToken(accessToken);
-        navigate('/');
-        // toaster.success(sigInResponse.message);
+        const tokenDetails = getAuthTokenDetails(accessToken);
+        if (tokenDetails?.authorities?.includes('ROLE_ADMIN')) {
+          setAccessToken(accessToken);
+          setToken(accessToken);
+          navigate(queryParams.ref || '/');
+          setIsLoading(false);
+        } else {
+          setIsLoading(false);
+          toaster.warning('You do not have permission to access this application.');
+        }
       }
     } catch (error) {
       if (error.response) {

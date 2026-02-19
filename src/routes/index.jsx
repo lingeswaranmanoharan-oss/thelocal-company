@@ -12,10 +12,12 @@ import Designation from '../pages/masters/designations/Designation';
 import Department from '../pages/masters/departments/Department';
 import EmployeeTypesPage from '../pages/masters/employement-types/employeeTypespage';
 import Payroll from '../pages/payroll/Payroll';
-import PaySlip from '../pages/payroll/PaySlip';
 import { ResetPasswordPage } from '../pages/auth/ResetPasswordPage';
 import SalaryComponentListPage from '../pages/masters/salary-component/SalaryComponentPage';
 import SalaryComponentFormPage from '../pages/masters/salary-component/SalaryComponentFormPage';
+import HolidaysPage from '../pages/holidays/HolidaysPage';
+import EmployeeEditPage from '../pages/Employee/employee_edit_page';
+import ChangePasswordPage from '../pages/auth/ChangePasswordPage';
 
 export const router = createBrowserRouter([
   {
@@ -35,10 +37,16 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: '/reset',
+    path: '/change-password',
     element: (
-      <ResetPasswordPage />
+      <>
+        <ChangePasswordPage />
+      </>
     ),
+  },
+  {
+    path: '/reset',
+    element: <ResetPasswordPage />,
   },
   {
     path: '/',
@@ -73,7 +81,7 @@ export const router = createBrowserRouter([
       {
         path: 'salary-component/edit-salary-component/:id',
         element: <SalaryComponentFormPage />,
-      }
+      },
     ],
   },
   {
@@ -90,7 +98,7 @@ export const router = createBrowserRouter([
         element: <EmployeePage />,
       },
       {
-        path: '/employees/approved',
+        path: '/employees/onboarded',
         element: <EmployeePage />,
       },
       {
@@ -113,6 +121,10 @@ export const router = createBrowserRouter([
         path: '/employees/:status/viewEmployeeDetails/:companyId',
         element: <ViewEmployeeDetails />,
       },
+      {
+        path: '/employees/:status/:id',
+        element: <EmployeeEditPage />,
+      },
     ],
   },
   {
@@ -123,10 +135,16 @@ export const router = createBrowserRouter([
         path: 'upload-excel',
         element: <Payroll />,
       },
-      {
-        path: 'pay-slip',
-        element: <PaySlip />,
-      }
     ],
-  }
+  },
+  {
+    path: '/holidays',
+    element: <ProtectedRoute />,
+    children: [
+      {
+        index: true,
+        element: <HolidaysPage />,
+      },
+    ],
+  },
 ]);

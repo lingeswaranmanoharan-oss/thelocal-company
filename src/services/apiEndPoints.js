@@ -20,7 +20,7 @@ const apiEndpoints = {
   imageUpload: '/image',
   getCompanyProfile: (id) => `/v1/admin/companies/${id}`,
   generateCompanyAddresses: `/v1/admin/employee-profile`,
-
+  updateEmployeeDetails: (id) => `/v1/admin/employee/update/id/${id}`,
 
   getSalaryComponent: (companyId) => `/v1/salary-components/company/${companyId}`,
   getSalaryComponentById: (id) => `/v1/salary-components/${id}`,
@@ -29,5 +29,9 @@ const apiEndpoints = {
 
   addEmployeeSalary: `/v1/salary`,
   getEmployeeSalary: (employeeId) => `/v1/salary/employee/${employeeId}`,
+  addHoliday: `/v1/calendars`,
+  getHolidays: (id, query) => `/v1/calendars/companyId/${id}?${handleQueryParams(query)}`,
+  deleteHoliday: (id) => `/v1/calendars/${id}`,
+  updateHoliday: (companyId, id) => `/v1/calendars/companyId/${companyId}/id/${id}`,
 };
 export default apiEndpoints;

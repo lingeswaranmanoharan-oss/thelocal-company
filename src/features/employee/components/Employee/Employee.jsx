@@ -9,7 +9,7 @@ import apiServices from '../../../../services/apiServices';
 import apiEndpoints from '../../../../services/apiEndPoints';
 import { apiStatusConstants, EmployeeTypes } from '../../../../utils/enum';
 import { TableComponent, TableRow } from '../../../../components/Table/Table';
-import { Button, ViewIconButton } from '../../../../components/Button/Button';
+import { Button, EditIconButton, ViewIconButton } from '../../../../components/Button/Button';
 import { Icon } from '@iconify/react';
 import { IconButton } from '@mui/material';
 import { Link } from 'react-router-dom';
@@ -157,11 +157,11 @@ const EachEmployeeRow = ({ each, pathname, names, getEmployees }) => {
           each.personalEmail,
           each.contactNumber,
           !pathname.includes('pending') && (
-            <div className="flex items-center gap-1">
+            <div className="w-full flex justify-center gap-1">
               <ViewIconButton
                 requestedPath={`/employees/${names[2]}/viewEmployeeDetails/${each.id}`}
               />
-              <IconButton
+              {pathname.includes('onboarded') && (<IconButton
                 onClick={handleOpenAddSalary}
                 title="Add Salary"
                 aria-label="Add Salary"
@@ -169,7 +169,11 @@ const EachEmployeeRow = ({ each, pathname, names, getEmployees }) => {
               >
                 <Icon icon="mdi:cash-plus" color="#f26522" height={22} />
               </IconButton>
+              )}
             </div>
+          ),
+          pathname.includes('pending') && (
+            <EditIconButton requestedPath={`${pathname}/${each.id}`} />
           ),
         ]}
         key={each.id}
@@ -216,7 +220,7 @@ const Employee = () => {
       apiUrl: apiEndpoints.getEmployees(getCompanyId(), {
         employeeApplicationStatus: pathname.includes('pending')
           ? EmployeeTypes.initiated
-          : pathname.includes('approved')
+          : pathname.includes('onboarded')
             ? EmployeeTypes.approved
             : pathname.includes('requested')
               ? EmployeeTypes.pending
@@ -257,7 +261,7 @@ const Employee = () => {
           'Employee Name',
           'Email',
           'Mobile Number',
-          !pathname.includes('pending') && 'ACT',
+          'ACT',
         ]}
         colSpan={!pathname.includes('pending') ? 5 : 4}
         onPageChange={(value) => setQueryParams({ page: value })}

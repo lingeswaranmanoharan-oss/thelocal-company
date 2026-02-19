@@ -17,7 +17,7 @@ const tabs = [
   { id: 'addresses?', label: 'Address' },
   { id: 'passport?', label: 'Documents' },
   { id: 'education?', label: 'Education' },
-  { id: 'employment?', label: 'Employment' },
+  // { id: 'employment?', label: 'Employment' },
   { id: 'experience?', label: 'Experience' },
   { id: 'dependency?', label: 'Bank Details' },
 ];
@@ -33,7 +33,7 @@ const SectionHeader = ({ title }) => (
       // bo: "2px solid #e9ecef";
     }}
   >
-    <h2 className="section-title" style={{ marginBottom: 0 }}>
+    <h2 className="section-title !border-b-0" style={{ marginBottom: 0 }}>
       {title}
     </h2>
   </div>
@@ -47,6 +47,7 @@ const ViewEmployeeDetailsData = () => {
   const [status, setStatus] = useState('');
   const { pathParams, pathname, navigate } = useRouteInformation();
   const [apiStatus, setApiStatus] = useState(apiStatusConstants.initial);
+  const details = apiState?.data?.data;
 
   const handlePrevious = () => {
     if (activeTab > 0) {
@@ -102,21 +103,23 @@ const ViewEmployeeDetailsData = () => {
 
       <div style={{ display: 'flex' }}>
         <div className="details-grid w-[100%]">
-          {activeTab === 0 && (
-            <>{renderDetailItem('Employee ID', apiState?.data?.data?.employeeId)}</>
-          )}
-          {renderDetailItem('First Name', apiState?.data?.data?.firstName)}
-          {renderDetailItem('Last Name', apiState?.data?.data?.lastName)}
-          {renderDetailItem('Date of Birth', getDateToDDMMYYYYformat(apiState?.data?.data?.dob))}
-          {renderDetailItem('Gender', apiState?.data?.data?.gender)}
-          {renderDetailItem('Marital Status', apiState?.data?.data?.maritalStatus)}
-          {renderDetailItem('Blood Group', apiState?.data?.data?.bloodGroup)}
-          {renderDetailItem('Personal Email', apiState?.data?.data?.personalEmail)}
-          {renderDetailItem('Mobile Number', apiState?.data?.data?.contactNumber)}
+          {activeTab === 0 && <>{renderDetailItem('Employee ID', details?.employeeId)}</>}
+          {renderDetailItem('First Name', details?.firstName)}
+          {renderDetailItem('Last Name', details?.lastName)}
+          {renderDetailItem('Date of Birth', getDateToDDMMYYYYformat(details?.dob))}
+          {renderDetailItem('Gender', details?.gender)}
+          {renderDetailItem('Marital Status', details?.maritalStatus)}
+          {renderDetailItem('Blood Group', details?.bloodGroup)}
+          {renderDetailItem('Personal Email', details?.personalEmail)}
+          {renderDetailItem('Mobile Number', details?.contactNumber)}
+          {renderDetailItem('Nationality', details?.nationality)}
+          {renderDetailItem('Religion', details?.religion, true)}
+          {renderDetailItem('Emergency Contact Name', details?.emergencyContactPerson)}
+          {renderDetailItem('Emergency Contact Number', details?.emergencyContactNum)}
         </div>
         <div style={{ display: 'flex', alignItems: 'start', width: '50%' }}>
           <img
-            src={apiState?.profileUrl || 'https://placehold.co/600x400?text=No%20image'}
+            src={details?.profileUrl || 'https://placehold.co/600x400?text=No%20image'}
             alt="profile"
             style={{
               height: '150px',
@@ -129,8 +132,8 @@ const ViewEmployeeDetailsData = () => {
       </div>
 
       <h2 className="section-title">Family Details</h2>
-      {apiState?.data?.data?.familyDetails.length !== 0 ? (
-        apiState?.data?.data?.familyDetails?.map((each, index, arr) => {
+      {details?.familyDetails.length !== 0 ? (
+        details?.familyDetails?.map((each, index, arr) => {
           return (
             <>
               <div className="details-grid">
@@ -162,13 +165,9 @@ const ViewEmployeeDetailsData = () => {
     </div>
   );
 
-  const currentAddress = apiState?.data?.data?.addresses?.find(
-    (item) => item.addressType === 'CURRENT',
-  );
+  const currentAddress = details?.addresses?.find((item) => item.addressType === 'CURRENT');
 
-  const permanentAddress = apiState?.data?.data?.addresses?.find(
-    (item) => item.addressType === 'PERMANENT',
-  );
+  const permanentAddress = details?.addresses?.find((item) => item.addressType === 'PERMANENT');
 
   const renderAddressBlock = (data) => {
     if (!data) return null;
@@ -187,7 +186,7 @@ const ViewEmployeeDetailsData = () => {
   };
 
   const renderAddressDetails = () => (
-    <div>
+    <>
       <SectionHeader
         title="Current Address"
         profileUpdatedFlag={apiState?.profileUpdatedFlag}
@@ -204,14 +203,14 @@ const ViewEmployeeDetailsData = () => {
       ) : (
         <p style={{ textAlign: 'center', color: '#adb5bd' }}>Not Provided</p>
       )}
-    </div>
+    </>
   );
 
   const renderPassportDetails = () => (
     <div>
       <h2 className="section-title">Documents Details</h2>
-      {apiState?.data?.data?.documents?.length !== 0 ? (
-        apiState?.data?.data?.documents.map((each) => {
+      {details?.documents?.length !== 0 ? (
+        details?.documents.map((each) => {
           return (
             <div className="details-grid">
               {renderDetailItem('Document Name', each?.documentName)}
@@ -238,8 +237,8 @@ const ViewEmployeeDetailsData = () => {
   const renderAcademicDetails = () => (
     <div>
       <h2 className="section-title">Education Details</h2>
-      {apiState?.data?.data?.employeeEducation?.length !== 0 ? (
-        apiState?.data?.data?.employeeEducation?.map((each, index, arr) => {
+      {details?.employeeEducation?.length !== 0 ? (
+        details?.employeeEducation?.map((each, index, arr) => {
           return (
             <>
               <div className="details-grid mt-5">
@@ -289,12 +288,12 @@ const ViewEmployeeDetailsData = () => {
       </div> */}
       <h2 className="section-title">Employment Details</h2>
       <div className="details-grid">
-        {renderDetailItem('Employment Type', apiState?.employmentTypeName)}
-        {renderDetailItem('Designation', apiState?.designationName)}
-        {renderDetailItem('Department', apiState?.departmentName)}
-        {renderDetailItem('Joining Date', apiState?.doj)}
-        {renderDetailItem('Employment Id', apiState?.employeeId)}
-        {renderDetailItem('Office Mail', apiState?.officialEmail)}
+        {renderDetailItem('Employment Type', details?.employmentTypeName)}
+        {renderDetailItem('Designation', details?.designationName)}
+        {renderDetailItem('Department', details?.departmentName)}
+        {renderDetailItem('Joining Date', details?.doj)}
+        {renderDetailItem('Employment Id', details?.employeeId)}
+        {renderDetailItem('Office Mail', details?.officialEmail)}
       </div>
     </div>
   );
@@ -302,8 +301,8 @@ const ViewEmployeeDetailsData = () => {
   const renderExperienceDetails = () => (
     <div>
       <h2 className="section-title">Experience Details</h2>
-      {apiState?.data?.data?.experiences?.length !== 0 ? (
-        apiState?.data?.data?.experiences.map((each) => {
+      {details?.experiences?.length !== 0 ? (
+        details?.experiences.map((each) => {
           return (
             <>
               <div className="details-grid">
@@ -365,57 +364,41 @@ const ViewEmployeeDetailsData = () => {
         Bank Details
       </h3>
       <div className="details-grid">
-        {renderDetailItem('Account Holder Name', apiState?.data?.data?.bankAccHolderName)}
-        {renderDetailItem('Bank Name', apiState?.data?.data?.bankName)}
-        {renderDetailItem('Account Number', apiState?.data?.data?.bankAccNum)}
-        {renderDetailItem('IFSC Code', apiState?.data?.data?.ifscCode)}
-        {renderDetailItem('Branch', apiState?.data?.data?.bankBranch, true)}
+        {renderDetailItem('Account Holder Name', details?.bankAccHolderName)}
+        {renderDetailItem('Bank Name', details?.bankName)}
+        {renderDetailItem('Account Number', details?.bankAccNum)}
+        {renderDetailItem('IFSC Code', details?.ifscCode)}
+        {renderDetailItem('Branch', details?.bankBranch, true)}
       </div>
       <SectionHeader title="Statutory Details" />
       <div className="details-grid">
-        {renderDetailItem('UAN Number', apiState?.data?.data?.uanNumber)}
-        {renderDetailItem('ESI Number', apiState?.data?.data?.esiNumber)}
+        {renderDetailItem('UAN Number', details?.uanNumber)}
+        {renderDetailItem('ESI Number', details?.esiNumber)}
       </div>
-      {pathname.includes('requested') && (
-        <div className="action-buttons">
-          <button
-            className="btn btn-approve"
-            onClick={() => {
-              setConfirmPopup(true);
-              setStatus('approve');
-            }}
-          >
-            ✓ Approve Application
-          </button>
-          <button
-            className="btn btn-reject"
-            onClick={() => {
-              setConfirmPopup(true);
-              setStatus('report');
-            }}
-          >
-            ✗ Report Application
-          </button>
-        </div>
-      )}
     </div>
   );
 
   const renderContent = () => {
     switch (activeTab) {
       case 0:
-        return renderPersonalDetails();
+        return (
+          <>
+            {' '}
+            {renderPersonalDetails()}
+            {renderEmploymentDetails()}
+          </>
+        );
       case 1:
         return renderAddressDetails();
       case 2:
         return renderPassportDetails();
       case 3:
         return renderAcademicDetails();
+      // case 4:
+      // return renderEmploymentDetails();
       case 4:
-        return renderEmploymentDetails();
-      case 5:
         return renderExperienceDetails();
-      case 6:
+      case 5:
         return renderDependencyDetails();
       default:
         return null;
@@ -430,7 +413,7 @@ const ViewEmployeeDetailsData = () => {
         setApiStatus(apiStatusConstants.success);
         toaster.success(response.message);
         setConfirmPopup(false);
-        navigate(status === 'report' ? '/employees/reported' : '/employees/approved');
+        navigate(status === 'report' ? '/employees/reported' : '/employees/onboarded');
       } else {
         setApiStatus(apiStatusConstants.failure);
         toaster.error(response.message);
@@ -484,34 +467,41 @@ const ViewEmployeeDetailsData = () => {
         ))}
       </div>
 
-      <div className="content">
-        {renderContent()}
-        {activeTab !== 6 && pathname.includes('requested') && (
-          <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px ' }}>
-            <button
-              className="btn btn-reject h-[40px] w-[120px]"
-              onClick={() => {
-                setConfirmPopup(true);
-                setStatus('report');
-              }}
-            >
-              Report
-            </button>
-          </div>
-        )}
-      </div>
+      <div className="content max-h-[0]">{renderContent()}</div>
       {activeTab !== 6 && (
         <div className="button-group">
           <button className="btn btn-previous" onClick={handlePrevious} disabled={activeTab === 0}>
             ← Previous
           </button>
-          <button
-            className="btn btn-next"
-            onClick={handleNext}
-            disabled={activeTab === tabs.length - 1}
-          >
-            Next →
-          </button>
+          <div className="flex gap-2">
+            {pathname.includes('requested') && (
+              <button
+                className="btn btn-next"
+                onClick={() => {
+                  setConfirmPopup(true);
+                  setStatus('report');
+                }}
+              >
+                Report
+              </button>
+            )}
+            {activeTab === 5 && pathname.includes('requested') && (
+              <button
+                className="btn btn-approve"
+                onClick={() => {
+                  setConfirmPopup(true);
+                  setStatus('approve');
+                }}
+              >
+                ✓ Approve Application
+              </button>
+            )}
+            {activeTab !== tabs.length - 1 && (
+              <button className="btn btn-next" onClick={handleNext}>
+                Next →
+              </button>
+            )}
+          </div>
         </div>
       )}
 
@@ -521,7 +511,7 @@ const ViewEmployeeDetailsData = () => {
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             <div className="flex flex-col gap-4 p-5 w-full max-w-lg  ">
               {/* Title */}
-              {activeTab === 6 && (
+              {activeTab === 5 && (
                 <>
                   <p className="text-gray-700 text-center font-medium">
                     Are you sure you want to {status} status?
@@ -540,22 +530,22 @@ const ViewEmployeeDetailsData = () => {
                     value={reason}
                     onChange={(e) => setReason(e.target.value)}
                     className="
-              w-full
-              border border-gray-300
-              rounded-lg
-              p-3
-              text-sm
-              focus:outline-none
-              focus:ring-2
-              focus:ring-red-400
-              resize-none
-            "
+                      w-full
+                      border border-gray-300
+                      rounded-lg
+                      p-3
+                      text-sm
+                      focus:outline-none
+                      focus:ring-2
+                      focus:ring-red-400
+                      resize-none
+                    "
                   />
                 </div>
               )}
 
               {/* Button */}
-              {activeTab === 6 && (
+              {activeTab === 5 && (
                 <div className="flex justify-end">
                   <button
                     onClick={() =>
@@ -567,17 +557,17 @@ const ViewEmployeeDetailsData = () => {
                     }
                     disabled={status === 'report' && !reason.trim()}
                     className={`
-            px-5 py-2
-            rounded-lg
-            text-white
-            font-medium
-            transition
-            ${
-              status === 'report'
-                ? 'bg-red-500 hover:bg-red-600 disabled:bg-red-300'
-                : 'bg-green-600 hover:bg-green-700'
-            }
-          `}
+                      px-5 py-2
+                      rounded-lg
+                      text-white
+                      font-medium
+                      transition
+                      ${
+                        status === 'report'
+                          ? 'bg-red-500 hover:bg-red-600 disabled:bg-red-300'
+                          : 'bg-green-600 hover:bg-green-700'
+                      }
+                    `}
                   >
                     {status === 'report' ? 'Report' : 'Approve'}
                   </button>

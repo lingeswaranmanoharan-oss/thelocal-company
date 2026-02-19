@@ -59,9 +59,9 @@ const handleQueryParams = (params) => {
   return queryParams.toString();
 };
 
-const getAuthTokenDetails = () => {
+const getAuthTokenDetails = (authToken) => {
   try {
-    const token = getAccessToken();
+    const token = authToken || getAccessToken();
 
     if (!token) return null;
 

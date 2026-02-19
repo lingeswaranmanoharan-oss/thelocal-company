@@ -29,10 +29,6 @@ export const Container = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
-  const renderPage = () => {
-    return <Outlet />;
-  };
-
   if (getAuthTokenDetails()?.firstLogin === false) {
     return <ChangePasswordPage />;
   }
@@ -53,7 +49,9 @@ export const Container = () => {
           <Header onMobileMenuToggle={handleMobileMenuToggle} />
 
           {/* Page Content */}
-          <main className="flex-1 overflow-y-auto p-5">{renderPage()}</main>
+          <main className="flex-1 overflow-y-auto p-5">
+            <Outlet />
+          </main>
         </div>
       </div>
     </div>

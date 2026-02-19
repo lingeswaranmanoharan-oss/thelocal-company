@@ -1,5 +1,5 @@
 import './Header.scss';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Icon } from '@iconify/react';
 import useRouteInformation from '../../hooks/useRouteInformation';
 import StorageService from '../../services/storageService';
@@ -13,12 +13,13 @@ import Popup from '../../components/Popup/Popup';
 const Header = ({ onMobileMenuToggle }) => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [openLogoutPopup, setOpenLogoutPopup] = useState(false);
-  const { navigate } = useRouteInformation();
+  const { navigate, pathname, location } = useRouteInformation();
   const { logout } = useAuth();
   const dispatch = useDispatch();
   const profile = useSelector((state) => state.profile);
 
   const handleLogout = async () => {
+    setShowUserMenu(false);
     try {
       await signOut();
     } catch (error) {
@@ -31,6 +32,11 @@ const Header = ({ onMobileMenuToggle }) => {
 
   useEffect(() => {
     dispatch(fetchProfile());
+  }, []);
+
+  const handleNavigateToChPass = useCallback(() => {
+    setShowUserMenu(false);
+    navigate(`/change-password?ref=${pathname + location.search}`);
   }, []);
 
   return (
@@ -143,10 +149,11 @@ const Header = ({ onMobileMenuToggle }) => {
                 src={
                   apiStatusConditions.success(profile)
                     ? profile?.data?.data?.logoUrl
-                    : `https://placehold.co/600x400?text=${apiStatusConditions.failure(profile)
-                      ? 'failed to fetch the logo'
-                      : 'fetching logo...'
-                    }`
+                    : `https://placehold.co/600x400?text=${
+                        apiStatusConditions.failure(profile)
+                          ? 'failed to fetch the logo'
+                          : 'fetching logo...'
+                      }`
                 }
                 alt="User Avatar"
                 className="w-8 h-8 rounded-full"
@@ -192,23 +199,17 @@ const Header = ({ onMobileMenuToggle }) => {
                     <span style={{ color: 'var(--text-primary)' }}>My Profile</span>
                   </button>
 
-                  {/* <button className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center space-x-2">
+                  <button
+                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center space-x-2"
+                    onClick={handleNavigateToChPass}
+                  >
                     <Icon
-                      icon="mdi:cog-outline"
+                      icon="mdi:password-outline"
                       className="w-5 h-5"
                       style={{ color: 'var(--text-secondary)' }}
                     />
-                    <span style={{ color: 'var(--text-primary)' }}>Settings</span>
+                    <span style={{ color: 'var(--text-primary)' }}>Change Password</span>
                   </button>
-
-                  <button className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center space-x-2">
-                    <Icon
-                      icon="mdi:shield-lock-outline"
-                      className="w-5 h-5"
-                      style={{ color: 'var(--text-secondary)' }}
-                    />
-                    <span style={{ color: 'var(--text-primary)' }}>Security</span>
-                  </button> */}
                 </div>
 
                 <div className="border-t" style={{ borderColor: 'var(--border-light)' }}>
@@ -235,10 +236,7 @@ const Header = ({ onMobileMenuToggle }) => {
         onClose={() => setOpenLogoutPopup(false)}
         footer={
           <>
-            <button
-              className="px-4 py-2 border rounded"
-              onClick={() => setOpenLogoutPopup(false)}
-            >
+            <button className="px-4 py-2 border rounded" onClick={() => setOpenLogoutPopup(false)}>
               Cancel
             </button>
 

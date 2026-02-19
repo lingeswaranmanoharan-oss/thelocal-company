@@ -52,6 +52,7 @@ export const icons = {
   marital: 'mdi:ring',
   briefcase: 'mdi:briefcase-outline',
   children: 'mdi:baby-bottle-outline',
+  holidays:"flowbite:calendar-week-solid"
 };
 
 export const ITEMS_PER_PAGE_OPTIONS = [10, 25, 50, 100];

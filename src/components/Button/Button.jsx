@@ -57,8 +57,8 @@ export const EditIconButton = ({ callBackFunction, requestedPath }) => {
   if (requestedPath)
     return (
       <Link to={requestedPath}>
-        <IconButton>
-          <Icon icon="mdi:pencil-outline" color="#ff6e1f" height={22} />
+        <IconButton size="small" title="Edit" aria-label="Edit">
+          <Icon icon="mdi:pencil-outline" color="var(--hrm-primary)" height={22} />
         </IconButton>
       </Link>
     );

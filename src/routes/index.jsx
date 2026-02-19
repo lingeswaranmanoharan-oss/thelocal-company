@@ -12,6 +12,7 @@ import Designation from '../pages/masters/designations/Designation';
 import Department from '../pages/masters/departments/Department';
 import EmployeeTypesPage from '../pages/masters/employement-types/employeeTypespage';
 import Payroll from '../pages/payroll/Payroll';
+import PaySlip from '../pages/payroll/PaySlip';
 import { ResetPasswordPage } from '../pages/auth/ResetPasswordPage';
 import SalaryComponentListPage from '../pages/masters/salary-component/SalaryComponentPage';
 import SalaryComponentFormPage from '../pages/masters/salary-component/SalaryComponentFormPage';
@@ -121,6 +122,10 @@ export const router = createBrowserRouter([
       {
         path: 'upload-excel',
         element: <Payroll />,
+      },
+      {
+        path: 'pay-slip',
+        element: <PaySlip />,
       }
     ],
   }

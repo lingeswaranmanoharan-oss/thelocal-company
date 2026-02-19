@@ -22,7 +22,8 @@ const ViewEmployeeDetails = () => {
   return (
     <div>
       <Breadcrumb />
-      <ViewEmployeeDetailsData />
+      {/* <ViewEmployeeDetailsData /> */}
+      <ViewEmployeesDetail/>
     </div>
   );
 };

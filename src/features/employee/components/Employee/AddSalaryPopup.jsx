@@ -124,16 +124,24 @@ const defaultFormData = {
   professionTax: null,
 };
 
-const FormRow = ({ label, children, className = '', error }) => (
+const FormRow = ({ label, children, yearlyValue, className = '', error }) => (
   <div className={className}>
-    <div className="flex items-center gap-4 py-2">
-      <label className="w-56 flex-shrink-0 text-sm font-medium text-gray-700">{label}</label>
-      <div className="flex-1 flex items-center justify-end gap-2 flex-wrap">{children}</div>
+    <div className="flex items-stretch gap-4 py-2">
+      <div className="flex flex-1 items-center gap-4 min-w-0">
+        <label className={"w-56 flex-shrink-0 text-sm font-medium text-gray-700"}>{label}</label>
+        <div className="flex-1 flex items-center justify-end gap-2 flex-wrap min-w-0">{children}</div>
+      </div>
+      <div className="w-36 flex-shrink-0 flex items-center justify-end">
+        {yearlyValue != null && (
+          <Input type="number" value={yearlyValue} disabled className="w-full bg-gray-50 text-right" />
+        )}
+      </div>
     </div>
     {error && (
       <div className="flex items-center gap-4">
-        <span className="w-56 flex-shrink-0" />
+        <span className="w-56" />
         <div className="flex-1 text-sm text-red-600 mt-1 text-right">{error}</div>
+        <div className="w-36 flex-shrink-0" />
       </div>
     )}
   </div>
@@ -152,8 +160,8 @@ const mapApiDataToFormData = (data) => {
     travel: data.travel ?? null,
     lta: data.lta ?? null,
     bonus: data.bonus ?? null,
-    employerPfPct: (data.employerPf / basic) * 100,
-    employeePfPct: (data.employeePf / basic) * 100 ,
+    employerPfPct:(data.employerPf / basic) * 100,
+    employeePfPct:(data.employerPf / basic) * 100,
     employerEsic: data.employerEsic ?? null,
     employeeEsic: data.employeeEsic ?? null,
     professionTax: data.professionalTax ?? null,
@@ -189,8 +197,18 @@ const AddSalaryPopup = ({ employeeId, onClose, onSuccess, viewMode = false, init
             const n = Number(value);
             return Number.isNaN(n) ? null : n;
           })();
-    setFormData((prev) => ({ ...prev, [field]: numValue }));
-    await validateField(field, numValue);
+    const isPfPct = field === 'employerPfPct' || field === 'employeePfPct';
+    setFormData((prev) => {
+      const next = { ...prev, [field]: numValue };
+      if (isPfPct) next.employerPfPct = next.employeePfPct = numValue;
+      return next;
+    });
+    if (isPfPct) {
+      await validateField('employerPfPct', numValue);
+      await validateField('employeePfPct', numValue);
+    } else {
+      await validateField(field, numValue);
+    }
   };
 
   const handleNumberChange = (field, e) => {
@@ -214,7 +232,9 @@ const AddSalaryPopup = ({ employeeId, onClose, onSuccess, viewMode = false, init
 
   const { employerEsic, employeeEsic, professionTax } = formData;
   const ctc = grossSalary + employerPfAmount + (employerEsic || 0);
-  const netTakeHome = ctc - employeePfAmount - (employeeEsic || 0) - (professionTax || 0);
+  const netTakeHome = grossSalary - employeePfAmount - (employeeEsic || 0) - (professionTax || 0);
+
+  const yearly = (value) => (value * 12);
 
   const submitSalaryData = async () => {
     try {
@@ -279,7 +299,15 @@ const AddSalaryPopup = ({ employeeId, onClose, onSuccess, viewMode = false, init
     <div className="flex flex-col max-h-[70vh] pt-2">
       <form className="flex flex-col min-h-0 flex-1 flex" onSubmit={viewMode ? (e) => e.preventDefault() : handleSubmit}>
         <div className="flex-1 overflow-y-auto min-h-0 space-y-1">
-          <FormRow label="Basic">
+          <div className="flex items-center gap-4 py-2 border-b border-gray-200">
+            <div className="flex-1 flex items-center gap-4 min-w-0">
+              <span className={"w-56 flex-shrink-0 text-sm font-semibold text-gray-700"}>Monthly</span>
+              <div className="flex-1" />
+            </div>
+            <div className="w-36 flex-shrink-0 text-right text-sm font-semibold text-gray-700">Yearly</div>
+          </div>
+
+          <FormRow label="Basic" yearlyValue={yearly(formData.basic)}>
             <Input
               type="number"
               min={0}
@@ -290,7 +318,7 @@ const AddSalaryPopup = ({ employeeId, onClose, onSuccess, viewMode = false, init
               disabled={viewMode}
             />
           </FormRow>
-          <FormRow label={HRA_PCT_FIELD.label} error={errors.houseRentAllowancePct}>
+          <FormRow label={HRA_PCT_FIELD.label} yearlyValue={yearly(hraAmount)} error={errors.houseRentAllowancePct}>
             <Input
               type="number"
               min={0}
@@ -309,7 +337,7 @@ const AddSalaryPopup = ({ employeeId, onClose, onSuccess, viewMode = false, init
             />
           </FormRow>
           {MANUAL_AMOUNT_FIELDS.map(({ key, label }) => (
-            <FormRow key={key} label={label} error={errors[key]}>
+            <FormRow key={key} label={label} yearlyValue={yearly(formData[key])} error={errors[key]}>
               <Input
                 type="number"
                 min={0}
@@ -320,93 +348,93 @@ const AddSalaryPopup = ({ employeeId, onClose, onSuccess, viewMode = false, init
               />
             </FormRow>
           ))}
-          <FormRow label="Gross Salary">
+          <FormRow label="Gross Salary" yearlyValue={yearly(grossSalary)}>
             <Input type="number" value={grossSalary} disabled className="max-w-[140px] bg-gray-100" />
           </FormRow>
 
-        <hr className="my-4 border-gray-200" />
+          <hr className="my-4 border-gray-200" />
 
-        <div className="text-sm font-medium text-gray-700 mb-2">Add:</div>
-        <div className="space-y-1">
-          <FormRow label="Employers cont. to Provident Fund" error={errors.employerPfPct}>
-            <Input
-              type="number"
-              min={0}
-              max={100}
-              value={formData.employerPfPct ?? ''}
-              onChange={(e) => !viewMode && handleNumberChange('employerPfPct', e)}
-              className="min-w-[120px] w-[120px]"
-              rightIcon={<span className="text-gray-500 text-sm font-medium">%</span>}
-              disabled={viewMode}
-            />
-            <Input
-              type="number"
-              value={employerPfAmount ?? ''}
-              disabled
-              className="max-w-[140px] bg-gray-100"
-            />
-          </FormRow>
-          <FormRow label="Employers cont. to ESIC" error={errors.employerEsic}>
-            <Input
-              type="number"
-              min={0}
-              value={formData.employerEsic ?? ''}
-              onChange={(e) => !viewMode && handleNumberChange('employerEsic', e)}
-              className="max-w-[140px]"
-              disabled={viewMode}
-            />
-          </FormRow>
-          <FormRow label="Cost to Company (CTC) per month">
-            <Input type="number" value={ctc} disabled className="max-w-[140px] bg-gray-100" />
-          </FormRow>
-        </div>
+          <div className="text-sm font-medium text-gray-700 mb-2">Add:</div>
+          <div className="space-y-1">
+            <FormRow label="Employers cont. to Provident Fund" yearlyValue={yearly(employerPfAmount)} error={errors.employerPfPct}>
+              <Input
+                type="number"
+                min={0}
+                max={100}
+                value={formData.employerPfPct ?? ''}
+                onChange={(e) => !viewMode && handleNumberChange('employerPfPct', e)}
+                className="min-w-[120px] w-[120px]"
+                rightIcon={<span className="text-gray-500 text-sm font-medium">%</span>}
+                disabled={viewMode}
+              />
+              <Input
+                type="number"
+                value={employerPfAmount ?? ''}
+                disabled
+                className="max-w-[140px] bg-gray-100"
+              />
+            </FormRow>
+            <FormRow label="Employers cont. to ESIC" yearlyValue={yearly(employerEsic)} error={errors.employerEsic}>
+              <Input
+                type="number"
+                min={0}
+                value={formData.employerEsic ?? ''}
+                onChange={(e) => !viewMode && handleNumberChange('employerEsic', e)}
+                className="max-w-[140px]"
+                disabled={viewMode}
+              />
+            </FormRow>
+            <FormRow label="Cost to Company (CTC) per month" yearlyValue={yearly(ctc)}>
+              <Input type="number" value={ctc} disabled className="max-w-[140px] bg-gray-100" />
+            </FormRow>
+          </div>
 
-        <hr className="my-4 border-gray-200" />
+          <hr className="my-4 border-gray-200" />
 
-        <div className="text-sm font-medium text-gray-700 mb-2">Less:</div>
-        <div className="space-y-1">
-          <FormRow label="Employees cont. to Provident Fund" error={errors.employeePfPct}>
-            <Input
-              type="number"
-              min={0}
-              max={100}
-              value={formData.employeePfPct ?? ''}
-              onChange={(e) => !viewMode && handleNumberChange('employeePfPct', e)}
-              className="min-w-[120px] w-[120px]"
-              rightIcon={<span className="text-gray-500 text-sm font-medium">%</span>}
-              disabled={viewMode}
-            />
-            <Input
-              type="number"
-              value={employeePfAmount ?? ''}
-              disabled
-              className="max-w-[140px] bg-gray-100"
-            />
-          </FormRow>
-          <FormRow label="Employees cont. to ESIC" error={errors.employeeEsic}>
-            <Input
-              type="number"
-              min={0}
-              value={formData.employeeEsic ?? ''}
-              onChange={(e) => !viewMode && handleNumberChange('employeeEsic', e)}
-              className="max-w-[140px]"
-              disabled={viewMode}
-            />
-          </FormRow>
-          <FormRow label="Profession Tax" error={errors.professionTax}>
-            <Input
-              type="number"
-              min={0}
-              value={formData.professionTax ?? ''}
-              onChange={(e) => !viewMode && handleNumberChange('professionTax', e)}
-              className="max-w-[140px]"
-              disabled={viewMode}
-            />
-          </FormRow>
-          <FormRow label="Net take home salary monthly">
-            <Input type="number" value={netTakeHome} disabled className="max-w-[140px] bg-gray-100" />
-          </FormRow>
-        </div>
+          <div className="text-sm font-medium text-gray-700 mb-2">Less:</div>
+          <div className="space-y-1">
+            <FormRow label="Employees cont. to Provident Fund" yearlyValue={yearly(employeePfAmount)} error={errors.employeePfPct}>
+              <Input
+                type="number"
+                min={0}
+                max={100}
+                value={formData.employeePfPct ?? ''}
+                onChange={(e) => !viewMode && handleNumberChange('employeePfPct', e)}
+                className="min-w-[120px] w-[120px]"
+                rightIcon={<span className="text-gray-500 text-sm font-medium">%</span>}
+                disabled={viewMode}
+              />
+              <Input
+                type="number"
+                value={employeePfAmount ?? ''}
+                disabled
+                className="max-w-[140px] bg-gray-100"
+              />
+            </FormRow>
+            <FormRow label="Employees cont. to ESIC" yearlyValue={yearly(employeeEsic)} error={errors.employeeEsic}>
+              <Input
+                type="number"
+                min={0}
+                value={formData.employeeEsic ?? ''}
+                onChange={(e) => !viewMode && handleNumberChange('employeeEsic', e)}
+                className="max-w-[140px]"
+                disabled={viewMode}
+              />
+            </FormRow>
+            <FormRow label="Profession Tax" yearlyValue={yearly(professionTax)} error={errors.professionTax}>
+              <Input
+                type="number"
+                min={0}
+                value={formData.professionTax ?? ''}
+                onChange={(e) => !viewMode && handleNumberChange('professionTax', e)}
+                className="max-w-[140px]"
+                disabled={viewMode}
+              />
+            </FormRow>
+            <FormRow label="Net take home salary monthly" yearlyValue={yearly(netTakeHome)}>
+              <Input type="number" value={netTakeHome} disabled className="max-w-[140px] bg-gray-100" />
+            </FormRow>
+          </div>
         </div>
 
         <div className="flex-shrink-0 flex justify-end gap-3 pt-4 mt-4 border-t border-gray-200">

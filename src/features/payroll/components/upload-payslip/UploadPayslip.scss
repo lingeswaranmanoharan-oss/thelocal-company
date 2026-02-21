@@ -1,0 +1,116 @@
+.upload-payslip-card {
+  border-radius: 12px;
+}
+
+.upload-payslip-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(to bottom, #fafafa, #fff);
+}
+
+.upload-payslip-zone-wrapper {
+  label {
+    display: block;
+  }
+}
+
+.upload-payslip-zone {
+  min-height: 180px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+
+  &:hover,
+  &:focus {
+    outline: none;
+    border-color: #f26522;
+    background-color: rgba(242, 101, 34, 0.04);
+  }
+
+  &.has-file {
+    border-style: solid;
+    border-color: #e2e8f0;
+    background-color: #f8fafc;
+  }
+
+  &.has-error {
+    border-color: #ef4444;
+    background-color: rgba(239, 68, 68, 0.04);
+  }
+}
+
+.upload-payslip-icon {
+  font-size: 48px;
+  color: #f26522;
+  margin-bottom: 12px;
+}
+
+.upload-payslip-text {
+  font-size: 15px;
+  font-weight: 500;
+  color: #334155;
+  margin: 0 0 4px 0;
+}
+
+.upload-payslip-sub {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0;
+}
+
+.upload-payslip-file-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  max-width: 100%;
+}
+
+.upload-payslip-file-icon {
+  font-size: 28px;
+  color: #f26522;
+  flex-shrink: 0;
+}
+
+.upload-payslip-file-name {
+  font-size: 14px;
+  color: #334155;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.upload-payslip-remove {
+  flex-shrink: 0;
+  padding: 4px;
+  border: none;
+  background: none;
+  color: #94a3b8;
+  cursor: pointer;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease, background-color 0.2s ease;
+
+  &:hover {
+    color: #ef4444;
+    background-color: rgba(239, 68, 68, 0.08);
+  }
+
+  .iconify {
+    width: 22px;
+    height: 22px;
+  }
+}

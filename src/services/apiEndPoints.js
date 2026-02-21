@@ -33,5 +33,8 @@ const apiEndpoints = {
   getHolidays: (id, query) => `/v1/calendars/companyId/${id}?${handleQueryParams(query)}`,
   deleteHoliday: (id) => `/v1/calendars/${id}`,
   updateHoliday: (companyId, id) => `/v1/calendars/companyId/${companyId}/id/${id}`,
+
+  getPayslipTemplate: () => '/payslip/template',
+  uploadPayslip: () => '/payslip/upload',
 };
 export default apiEndpoints;

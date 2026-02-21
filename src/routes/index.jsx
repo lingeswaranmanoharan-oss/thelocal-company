@@ -20,6 +20,7 @@ import HolidaysPage from '../pages/holidays/HolidaysPage';
 import EmployeeEditPage from '../pages/Employee/employee_edit_page';
 import ChangePasswordPage from '../pages/auth/ChangePasswordPage';
 import GeneratePayslipPage from '../pages/payroll/GeneratePayslipPage';
+import UploadPayslipPage from '../pages/payroll/UploadPayslipPage';
 
 export const router = createBrowserRouter([
   {
@@ -144,6 +145,10 @@ export const router = createBrowserRouter([
       {
         path: 'generate-payslip',
         element: <GeneratePayslipPage />,
+      },
+       {
+        path: 'upload-payslip',
+        element: <UploadPayslipPage />,
       }
     ],
   },

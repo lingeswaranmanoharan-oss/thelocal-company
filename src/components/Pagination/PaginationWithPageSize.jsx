@@ -41,20 +41,22 @@ const PaginationComponent = ({ totalPages, pageName, onPageChange, currentPage }
   );
 };
 
-const PageSize = ({ onChangePageSize, pageSize }) => {
+const PageSize = ({ onChangePageSize, pageSize, pageName }) => {
   const { queryParams, setQueryParams } = useRouteInformation();
+
   const handlePageSize = (value) => {
     onChangePageSize
       ? onChangePageSize(value)
       : setQueryParams({
           size: value,
+          [pageName || 'page']: 0,
         });
   };
   return (
     <Dropdown
       className="w-[100px] !mb-0"
       items={ITEMS_PER_PAGE_OPTIONS.map((each) => ({ label: each, value: each }))}
-      selectedValue={pageSize || queryParams.size || 10}
+      selectedValue={pageSize || parseInt(queryParams.size) || 10}
       onSelect={handlePageSize}
     />
   );
@@ -79,7 +81,11 @@ const PaginationWithSizeComp = ({
 }) => {
   return (
     <div className="flex items-center">
-      {pageSize && <PageSize onChangePageSize={onChangePageSize} pageSize={parseInt(pageSize)} />}{' '}
+      <PageSize
+        onChangePageSize={onChangePageSize}
+        pageSize={parseInt(pageSize)}
+        pageName={pageName}
+      />
       {/* <span className="text-sm text-gray-600">
         {getPaginationText(currentPage, pageSize, totalItems)}
       </span> */}

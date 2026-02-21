@@ -161,14 +161,15 @@ const EachEmployeeRow = ({ each, pathname, names, getEmployees }) => {
               <ViewIconButton
                 requestedPath={`/employees/${names[2]}/viewEmployeeDetails/${each.id}`}
               />
-              {pathname.includes('onboarded') && (<IconButton
-                onClick={handleOpenAddSalary}
-                title="Add Salary"
-                aria-label="Add Salary"
-                size="small"
-              >
-                <Icon icon="mdi:cash-plus" color="#f26522" height={22} />
-              </IconButton>
+              {pathname.includes('onboarded') && (
+                <IconButton
+                  onClick={handleOpenAddSalary}
+                  title="Add Salary"
+                  aria-label="Add Salary"
+                  size="small"
+                >
+                  <Icon icon="mdi:cash-plus" color="#f26522" height={22} />
+                </IconButton>
               )}
             </div>
           ),
@@ -213,7 +214,7 @@ const EachEmployeeRow = ({ each, pathname, names, getEmployees }) => {
 
 const Employee = () => {
   const [apiState, apiDispatch] = useReducer(apiReducer, initialState);
-  const { queryParams, setQueryParams, pathname } = useRouteInformation();
+  const { queryParams, pathname } = useRouteInformation();
   const names = pathname.split('/');
   const getEmployees = () => {
     apiServices.getService({
@@ -254,7 +255,7 @@ const Employee = () => {
       )}
 
       <TableComponent
-        apiState={apiState}
+        apiStatus={apiState?.apiStatus}
         headers={[
           'Id',
           pathname.includes('approved') && 'Employee ID',
@@ -264,13 +265,9 @@ const Employee = () => {
           'ACT',
         ]}
         colSpan={!pathname.includes('pending') ? 5 : 4}
-        onPageChange={(value) => setQueryParams({ page: value })}
-        onItemsPerPageChange={(value) => setQueryParams({ size: value })}
         totalPages={apiState?.data?.data?.totalPages}
-        currentPage={queryParams.page || 0}
         totalElements={apiState?.data?.data?.totalElements}
         itemsLength={apiState?.data?.data?.content?.length}
-        pageSize={queryParams.size}
       >
         {getRows()}
       </TableComponent>

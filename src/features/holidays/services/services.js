@@ -24,3 +24,20 @@ export const updateHoliday=async(holidayId,data)=>{
   const response=await HttpService.put(apiEndpoints.updateHoliday(getCompanyId(),holidayId),data);
   return response;
 }
+
+export const addBusinessDays=async(data)=>{
+  const response=await HttpService.post(apiEndpoints.addBusinessDays,{
+    ...data,companyId:getCompanyId()
+  });
+  return response;
+}
+
+export const updateBusinessDays=async(id,data)=>{
+  const response=await HttpService.put(apiEndpoints.updateBusinessDays(id),data);
+  return response
+}
+
+export const deleteBusinessDays=async(id)=>{
+  const response=await HttpService.delete(apiEndpoints.deleteBusinessDays(id));
+ return response;
+}

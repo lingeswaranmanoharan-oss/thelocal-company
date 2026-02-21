@@ -101,9 +101,10 @@ const Departments = () => {
 
       <TableComponent
         headers={['Department Name', 'Status']}
-        apiState={apiState}
+        apiStatus={apiState?.apiStatus}
         itemsLength={apiState?.data?.length}
         colSpan={2}
+        containerStyle={{ maxHeight: '70vh', scrollbarWidth: 'none' }}
       >
         {getRows()}
       </TableComponent>

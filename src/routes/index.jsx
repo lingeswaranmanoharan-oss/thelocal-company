@@ -16,11 +16,12 @@ import PaySlip from '../pages/payroll/PaySlip';
 import { ResetPasswordPage } from '../pages/auth/ResetPasswordPage';
 import SalaryComponentListPage from '../pages/masters/salary-component/SalaryComponentPage';
 import SalaryComponentFormPage from '../pages/masters/salary-component/SalaryComponentFormPage';
-import HolidaysPage from '../pages/holidays/HolidaysPage';
+import HolidaysPage from '../pages/holidays/holiday-list/HolidaysPage';
 import EmployeeEditPage from '../pages/Employee/employee_edit_page';
 import ChangePasswordPage from '../pages/auth/ChangePasswordPage';
 import GeneratePayslipPage from '../pages/payroll/GeneratePayslipPage';
 import UploadPayslipPage from '../pages/payroll/UploadPayslipPage';
+import BusinessDaysPage from '../pages/holidays/businessDays/BusinessDaysPage';
 
 export const router = createBrowserRouter([
   {
@@ -157,9 +158,13 @@ export const router = createBrowserRouter([
     element: <ProtectedRoute />,
     children: [
       {
-        index: true,
+        path: 'holiday-list',
         element: <HolidaysPage />,
       },
+      {
+        path:'business-days',
+        element:<BusinessDaysPage/>
+      }
     ],
   },
 ]);

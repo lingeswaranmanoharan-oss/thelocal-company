@@ -78,7 +78,7 @@ const addressSchema = yup.object({
         .trim()
         .required('Door / House No. is required')
         .matches(/^[a-zA-Z0-9\s\/,-]+$/, 'Enter a valid door / house number')
-        .max(20, 'Door / House No. must be at most 20 characters'),
+        .max(50, 'Door / House No. must be at most 50 characters'),
       landMark: yup
         .string()
         .trim()

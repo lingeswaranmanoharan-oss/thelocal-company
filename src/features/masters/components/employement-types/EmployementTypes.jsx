@@ -108,7 +108,7 @@ const EmployementTypes = () => {
 
       <TableComponent
         headers={['Employement Type', 'It Code', 'Status']}
-        apiState={apiState}
+        apiStatus={apiState.apiStatus}
         itemsLength={apiState?.data?.length}
         colSpan={3}
         containerStyle={{ maxHeight: '70vh', scrollbarWidth: 'none' }}

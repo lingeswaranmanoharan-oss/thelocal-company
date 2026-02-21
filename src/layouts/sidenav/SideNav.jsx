@@ -45,11 +45,17 @@ const menuConfig = [
     ],
   },
   {
-    key:"holidays",
-    label:"Holidays",
-    icon:icons.holidays,
-    children:[{label:"Holiday List",path:"/holidays"}]
-  }
+    key: 'holidays',
+    label: 'Holidays',
+    icon: icons.holidays,
+    children: [
+      { label: 'Holiday List', path: '/holidays/holiday-list' },
+      {
+        label: 'Business Days',
+        path: '/holidays/business-days',
+      },
+    ],
+  },
 ];
 
 const SideNav = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {

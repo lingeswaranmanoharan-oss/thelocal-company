@@ -9,6 +9,7 @@ import { apiStatusConditions } from '../../utils/functions';
 import { Pagination } from '../Pagination/Pagination';
 import TableSkeletonRows from './TableSkeletonRows/TableSkeletonRows';
 import { PaginationWithSizeComp } from '../Pagination/PaginationWithPageSize';
+import { apiStatusConstants } from '../../utils/enum';
 
 // Table Header Component
 const TableHeaders = ({ headers, theadStyles }) => {
@@ -87,7 +88,7 @@ const TableComponent = (props) => {
   const {
     headers,
     theadStyles,
-    apiState = 'SUCCESS', // 'INITIAL', 'LOADING', 'SUCCESS', 'FAILURE'
+    apiStatus, // 'INITIAL', 'LOADING', 'SUCCESS', 'FAILURE'
     itemsLength,
     illusionProps = {},
     colSpan,
@@ -100,19 +101,18 @@ const TableComponent = (props) => {
     pageSize,
     onPageChange,
     onItemsPerPageChange,
-    paginationNotRequired,
   } = props;
 
   const getTableRows = () => {
-    if (apiStatusConditions.success(apiState)) {
+    if (apiStatus === apiStatusConstants.success) {
       if (itemsLength) {
         return props.children;
       } else {
         return <TableIllusion {...illusionProps} type="nd" colSpan={colSpan} />;
       }
-    } else if (apiStatusConditions.failure(apiState)) {
+    } else if (apiStatus === apiStatusConstants.failure) {
       return <TableIllusion {...illusionProps} colSpan={colSpan} type="error" />;
-    } else if (inititalRow && apiStatusConditions.initial(apiState)) {
+    } else if (inititalRow && apiStatus === apiStatusConstants.initial) {
       return (
         <tr>
           <td
@@ -121,7 +121,7 @@ const TableComponent = (props) => {
               textAlign: 'center',
             }}
           >
-            <p>{inititalRow}</p>
+            {inititalRow}
           </td>
         </tr>
       );
@@ -143,7 +143,7 @@ const TableComponent = (props) => {
           <tbody>{getTableRows()}</tbody>
         </table>
       </div>
-      {apiStatusConditions.success(apiState) && paginationNotRequired ? (
+      {apiStatus === apiStatusConstants.success && totalPages ? (
         <div className="m-2">
           <PaginationWithSizeComp
             totalPages={totalPages}

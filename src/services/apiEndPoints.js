@@ -1,3 +1,4 @@
+import { updateBusinessDays } from '../features/holidays/services/services';
 import { getClientStorage, handleQueryParams } from '../utils/functions';
 
 const apiEndpoints = {
@@ -36,5 +37,9 @@ const apiEndpoints = {
 
   getPayslipTemplate: () => '/payslip/template',
   uploadPayslip: () => '/payslip/upload',
+  addBusinessDays:`/v1/business-days`,
+  getBusinessDays:(id,query)=>`/v1/business-days/companyId/${id}?${handleQueryParams(query)}`,
+  updateBusinessDays:(id)=>`/v1/business-days/id/${id}`,
+  deleteBusinessDays:(id)=>`/v1/business-days/${id}`
 };
 export default apiEndpoints;

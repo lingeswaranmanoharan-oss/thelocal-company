@@ -1,4 +1,4 @@
-import React, { useReducer, useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useReducer, useState, useEffect, useMemo, useRef } from 'react';
 import AddHolidayForm from './AddHolidayForm';
 import { Button } from '../../../components/Button/Button';
 import Popup from '../../../components/Popup/Popup';
@@ -23,11 +23,13 @@ import apiEndpoints from '../../../services/apiEndPoints';
 const Holidays = () => {
   const [apiState, apiDispatch] = useReducer(apiReducer, initialState);
   const [deleteStatus, setDeleteStatus] = useState(apiStatusConstants.initial);
+  const [apiStatus, setApiStatus] = React.useState(apiStatusConstants.initial);
 
   const [openPopup, setOpenPopup] = useState(false);
   const [deletePopup, setDeletePopup] = useState(false);
   const [selectedHoliday, setSelectedHoliday] = useState(null);
   const { queryParams, setQueryParams } = useRouteInformation();
+  const formRef = useRef(null);
 
   // Memoized fetch function to prevent unnecessary re-renders
 
@@ -35,23 +37,18 @@ const Holidays = () => {
     if (!queryParams?.year) return;
     apiServices.getService({
       apiUrl: apiEndpoints.getHolidays(getCompanyId(), {
-        year: queryParams?.year||dayjs().year(),
+        year: queryParams?.year || dayjs().year(),
       }),
       apiDispatch,
     });
   };
 
-  useEffect(() => {
-    fetchHolidays();
-  }, [queryParams?.year]);
-
-  useEffect(() => {
-    setQueryParams({ year: dayjs().year()});
-  }, []);
-
- 
   const toggleAddEditPopup = () => {
-    if (openPopup) setSelectedHoliday(null);
+    if (openPopup) {
+      setTimeout(() => {
+        setSelectedHoliday(null);
+      }, 100);
+    }
     setOpenPopup(!openPopup);
   };
 
@@ -73,7 +70,7 @@ const Holidays = () => {
       const response = await deleteHoliday(selectedHoliday.id);
       if (response.success) {
         toaster.success(response.message || 'Deleted successfully');
-        fetchHolidays(); // Refresh list
+        fetchHolidays(); 
         setDeletePopup(false);
       } else {
         toaster.error(response.message);
@@ -87,21 +84,23 @@ const Holidays = () => {
     }
   };
 
-  const handleYearChange = (date,year) => {
+  const handleYearChange = (date, year) => {
     //console.log(date,year)
-   // const year = dayjs(date).year();
-    setQueryParams({ year:Number(year) });
+    // const year = dayjs(date).year();
+    setQueryParams({ year: Number(year) });
   };
 
-  
+  const handleSave = () => {
+    formRef.current?.submitForm();
+  };
   // Memoize rows to optimize table rendering performance
   const renderedRows = useMemo(() => {
     if (!apiState?.data) return null;
-    
-    const orderedRows = [...(apiState?.data?.data)].sort(
+
+    const orderedRows = [...apiState?.data?.data].sort(
       (a, b) => new Date(a.holidayDate) - new Date(b.holidayDate),
     );
-  
+
     return orderedRows?.map((item) => (
       <TableRow
         key={item.id}
@@ -109,7 +108,7 @@ const Holidays = () => {
           item.holidayName,
           getDateToDDMMYYYYformat(item.holidayDate),
           item.weekdayName,
-          `${item.optionalFlag?"Yes":"NO"}`,
+          `${item.optionalFlag ? 'Yes' : 'NO'}`,
           <div className="space-x-2">
             <button
               // className="text-blue-600 hover:text-blue-800 transition-colors"
@@ -131,6 +130,15 @@ const Holidays = () => {
     ));
   }, [apiState.data?.data]);
 
+  useEffect(() => {
+    fetchHolidays();
+  }, [queryParams?.year]);
+
+  useEffect(() => {
+    if (!queryParams?.year) {
+      setQueryParams({ year: dayjs().year() });
+    }
+  }, [queryParams?.year]);
 
   return (
     <div className="bg-white border rounded-sm flex flex-col items-end">
@@ -143,7 +151,7 @@ const Holidays = () => {
           views={['year']}
           maxDate={dayjs()}
         />
-        
+
         <Button className="m-3" onClick={toggleAddEditPopup}>
           + Add Holiday
         </Button>
@@ -151,9 +159,10 @@ const Holidays = () => {
 
       <TableComponent
         headers={['Title', 'Date', 'Day', 'Optional', 'Act']}
-        apiState={apiState}
+        apiStatus={apiState.apiStatus}
         itemsLength={apiState?.data?.data?.length}
         colSpan={5}
+        containerStyle={{ maxHeight: '70vh', scrollbarWidth: 'none' }}
       >
         {renderedRows}
       </TableComponent>
@@ -164,12 +173,23 @@ const Holidays = () => {
         onClose={toggleAddEditPopup}
         header={selectedHoliday ? 'Edit Holiday' : 'Add Holiday'}
         maxWidth="xs"
+        footer={
+          <Button
+            type="submit"
+            onClick={handleSave}
+            disabled={apiStatus === apiStatusConstants.inProgress}
+          >
+            {apiStatus === apiStatusConstants.inProgress ? 'Saving...' : 'Save'}
+          </Button>
+        }
       >
         <AddHolidayForm
           onClose={toggleAddEditPopup}
           getHolidaysCalender={fetchHolidays}
           editData={selectedHoliday}
           isEditMode={!!selectedHoliday}
+          ref={formRef}
+          setApiStatus={setApiStatus}
         />
       </Popup>
 
@@ -179,15 +199,8 @@ const Holidays = () => {
         onClose={() => setDeletePopup(false)}
         header="Confirm Delete"
         maxWidth="xs"
-      >
-        <div className="p-5">
-          <p className="text-gray-600 mb-6">
-            Are you sure you want to delete{' '}
-            <span className="font-semibold text-black">{selectedHoliday?.holidayName}</span>? This
-            action cannot be undone.
-          </p>
-
-          <div className="flex justify-end gap-3">
+        footer={
+          <div className="flex  gap-3">
             <Button variant="secondary" onClick={() => setDeletePopup(false)}>
               Cancel
             </Button>
@@ -199,6 +212,14 @@ const Holidays = () => {
               {deleteStatus === apiStatusConstants.inProgress ? 'Deleting...' : 'Delete'}
             </Button>
           </div>
+        }
+      >
+        <div className="p-5">
+          <p className="text-gray-600 ">
+            Are you sure you want to delete{' '}
+            <span className="font-semibold text-black">{selectedHoliday?.holidayName} </span>? This
+            action cannot be undone.
+          </p>
         </div>
       </Popup>
     </div>

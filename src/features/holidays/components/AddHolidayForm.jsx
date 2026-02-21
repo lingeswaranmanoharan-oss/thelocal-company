@@ -1,4 +1,4 @@
-import React from 'react';
+import React ,{forwardRef,useImperativeHandle}from 'react';
 import { Input } from '../../../components/Input/Input';
 import { Button } from '../../../components/Button/Button';
 import { useForm, Watch } from 'react-hook-form';
@@ -26,8 +26,7 @@ const getWeekdayName = (dateString) => {
   });
 };
 
-const AddHolidayForm = ({ onClose, getHolidaysCalender, editData, isEditMode }) => {
-  const [apiStatus, setApiStatus] = React.useState(apiStatusConstants.initial);
+const AddHolidayForm = ({ onClose, getHolidaysCalender, editData, isEditMode,setApiStatus },ref) => {
 
   const {
     register,
@@ -63,7 +62,7 @@ const AddHolidayForm = ({ onClose, getHolidaysCalender, editData, isEditMode }) 
       // console.log(error.response.data?.error)
       setApiStatus(apiStatusConstants.failure);
       console.log(error);
-      toaster.error(error.response?.data?.error?.message);
+      toaster.error(error.response?.data?.error?.message||error?.data?.error?.message);
     }
   };
 
@@ -89,16 +88,14 @@ const AddHolidayForm = ({ onClose, getHolidaysCalender, editData, isEditMode }) 
     trigger('holidayDate')
   }
 
+  useImperativeHandle(ref,()=>({
+    submitForm:()=>handleSubmit(onSubmit)(),
+  }))
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="bg-white p-4 ">
+    <form  className="bg-white p-4 ">
       <section className="flex flex-col gap-3 mb-4">
         <Input label="Title" {...register('holidayName')} error={errors.holidayName?.message} />
-        {/* <Input
-          type="date"
-          label="Date"
-          {...register('holidayDate')}
-          error={errors.holidayDate?.message}
-        /> */}
         <DateInput
         label="Date"
         format="DD-MM-YYYY"
@@ -118,17 +115,9 @@ const AddHolidayForm = ({ onClose, getHolidaysCalender, editData, isEditMode }) 
           {...register('optionalFlag')}
         />
       </section>
-      <div className="flex">
-        <Button
-          type="submit"
-          className="ml-auto"
-          disabled={apiStatus === apiStatusConstants.inProgress}
-        >
-          {apiStatus === apiStatusConstants.inProgress ? 'Saving...' : 'Save'}
-        </Button>
-      </div>
+      
     </form>
   );
 };
 
-export default AddHolidayForm;
+export default forwardRef(AddHolidayForm);

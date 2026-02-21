@@ -4,7 +4,7 @@ import apiServices from '../../../../services/apiServices';
 import { apiReducer, getDateToDDMMYYYYformat, initialState } from '../../../../utils/functions';
 import apiEndpoints from '../../../../services/apiEndPoints';
 import useRouteInformation from '../../../../Hooks/useRouteInformation';
-import { apiStatusConstants } from '../../../../Utils/enum';
+import { apiStatusConstants } from '../../../../utils/enum';
 import toaster from '../../../../services/toasterService';
 import { updateEmployeeApplicationStatus } from '../../services/services';
 import { icons } from '../../../../Utils/constants';

@@ -52,7 +52,7 @@ const UploadPayslip = () => {
 
     const fileInputRef = useRef(null);
     const currentYear = new Date().getFullYear();
-    const currentMonth = new Date().getMonth();
+    const currentMonth = new Date().getMonth() + 1;
 
     const [month, setMonth] = useState(currentMonth);
     const [year, setYear] = useState(currentYear);
@@ -123,7 +123,7 @@ const UploadPayslip = () => {
                 toaster.error(message);
             } else if (error.data) {
                 const { message } = error.data.error || {};
-                toaster.error(message);
+            toaster.error(message);
             }
         }
         finally {

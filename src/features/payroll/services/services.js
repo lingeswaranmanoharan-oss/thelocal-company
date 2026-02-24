@@ -9,6 +9,21 @@ export const getPayslipTemplate = async ({ companyId, month, year }) => {
   return response;
 };
 
+export const getPayslipByCompany = async ({ companyId, month, year }) => {
+  const response = await HttpService.get(apiEndpoints.getPayslipByCompany(companyId), {
+    params: { month, year },
+  });
+  return response;
+};
+
+export const updatePayslipAttendance = async (payslipId, { presentDays, workingDays }) => {
+  const response = await HttpService.put(apiEndpoints.updatePayslipAttendance(payslipId), {
+    presentDays,
+    workingDays,
+  });
+  return response;
+};
+
 export const uploadPayslip = async (file, { companyId, month, year }) => {
   const formData = new FormData();
   formData.append('file', file);
@@ -18,5 +33,10 @@ export const uploadPayslip = async (file, { companyId, month, year }) => {
       'Content-Type': 'multipart/form-data'
     },
   });
+  return response;
+};
+
+export const finalizePayslip = async ({ companyId, month, year }) => {
+  const response = await HttpService.post(apiEndpoints.finalizePayslip(companyId, month, year));
   return response;
 };

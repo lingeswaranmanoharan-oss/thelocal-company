@@ -41,7 +41,7 @@ const menuConfig = [
     children: [
       { label: 'Upload Excel', path: '/payroll/upload-excel' },
       { label: 'Upload Payslip', path: '/payroll/upload-payslip' },
-      { label: 'Pay Slip', path: '/payroll/pay-slip' }
+      // { label: 'Pay Slip', path: '/payroll/pay-slip' }
     ],
   },
   {

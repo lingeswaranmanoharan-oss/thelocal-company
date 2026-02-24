@@ -1,0 +1,62 @@
+.payslip-details-table-wrap {
+  border-radius: 8px;
+}
+
+.payslip-details-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.payslip-details-th {
+  padding: 10px 14px;
+  text-align: left;
+  font-weight: 600;
+  color: #374151;
+  background: #f1f5f9;
+  border-bottom: 1px solid #e2e8f0;
+
+  &.text-right {
+    text-align: right;
+  }
+}
+
+.payslip-details-tr {
+  &:hover {
+    background: #f9fafb;
+  }
+}
+
+.payslip-details-td {
+  padding: 10px 14px;
+  color: #334155;
+  border-bottom: 1px solid #e5e7eb;
+  vertical-align: middle;
+
+  &.text-right {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &.text-center {
+    text-align: center;
+  }
+}
+
+.payslip-details-type {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+
+  &.payslip-details-type-earning {
+    background: #dcfce7;
+    color: #166534;
+  }
+
+  &.payslip-details-type-deduction {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+}

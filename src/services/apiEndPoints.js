@@ -37,6 +37,9 @@ const apiEndpoints = {
 
   getPayslipTemplate: () => '/payslip/template',
   uploadPayslip: () => '/payslip/upload',
+  getPayslipByCompany: (companyId) => `/payslip/company/${companyId}`,
+  updatePayslipAttendance: (payslipId) => `/payslip/attendance/payslipId/${payslipId}`,
+  finalizePayslip: (companyId, month, year) => `/payslip/finalize/companyId/${companyId}/month/${month}/year/${year}`,
   addBusinessDays:`/v1/business-days`,
   getBusinessDays:(id,query)=>`/v1/business-days/companyId/${id}?${handleQueryParams(query)}`,
   updateBusinessDays:(id)=>`/v1/business-days/id/${id}`,

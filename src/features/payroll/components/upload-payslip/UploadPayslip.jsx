@@ -4,10 +4,13 @@ import { Icon } from '@iconify/react';
 import { Breadcrumb } from '../../../../components/Breadcrumb/Breadcrumb';
 import { Dropdown } from '../../../../components/Dropdown/Dropdown';
 import { Button } from '../../../../components/Button/Button';
+import { Input } from '../../../../components/Input/Input';
+import Popup from '../../../../components/Popup/Popup';
 import { icons, MONTHS } from '../../../../Utils/constants';
+import PayslipDetailsContent from './PayslipDetailsContent';
 import toaster from '../../../../services/toasterService';
 import { getCompanyId } from '../../../../Utils/functions';
-import { getPayslipTemplate, uploadPayslip } from '../../services/services';
+import { getPayslipTemplate, uploadPayslip, getPayslipByCompany, updatePayslipAttendance, finalizePayslip } from '../../services/services';
 import './UploadPayslip.scss';
 
 const uploadPayslipSchema = yup.object().shape({
@@ -61,6 +64,64 @@ const UploadPayslip = () => {
     const [isDownloading, setIsDownloading] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [uploadResult, setUploadResult] = useState(null);
+    const [payslipList, setPayslipList] = useState([]);
+    const [editedPresentDays, setEditedPresentDays] = useState({});
+    const [calculatingPayslipId, setCalculatingPayslipId] = useState(null);
+    const [payslipDetailsPopup, setPayslipDetailsPopup] = useState(null);
+    const [isFinalizing, setIsFinalizing] = useState(false);
+
+    const fetchPayslipList = async () => {
+        const companyId = getCompanyId();
+        if (!companyId) return;
+        try {
+            const response = await getPayslipByCompany({ companyId, month, year });
+            setPayslipList(response.data);
+        } catch (err) {
+            setPayslipList([]);
+        }
+    };
+
+    useEffect(() => {
+        fetchPayslipList();
+    }, [month, year]);
+
+    const handlePresentDaysChange = (payslipId, value) => {
+        if (value === '') {
+            setEditedPresentDays((prev) => ({ ...prev, [payslipId]: '' }));
+            return;
+        }
+        const num = Number(value);
+        if (!Number.isNaN(num)) {
+            setEditedPresentDays((prev) => ({ ...prev, [payslipId]: num }));
+        }
+    };
+
+    const handleCalculate = async (row) => {
+        const payslipId = row.payslipId;
+        const presentDays = editedPresentDays[payslipId];
+        const workingDays = row.workingDays ?? 0;
+        setCalculatingPayslipId(payslipId);
+        try {
+            const response = await updatePayslipAttendance(payslipId, { presentDays: Number(presentDays), workingDays: Number(workingDays) });
+            if (response?.success && response?.data) {
+                const updated = response.data;
+                setPayslipList((prev) => prev.map((list) => (list.payslipId === updated.payslipId ? updated : list)));
+                toaster.success(response.message);
+            } else {
+                toaster.success(response?.message);
+            }
+            setEditedPresentDays((prev) => {
+                const next = { ...prev };
+                delete next[payslipId];
+                return next;
+            });
+        } catch (err) {
+            const message = error?.data?.message;
+            toaster.error(message);
+        } finally {
+            setCalculatingPayslipId(null);
+        }
+    };
 
     const monthOptions = months.map((eachMonth) => ({
         ...eachMonth,
@@ -96,6 +157,7 @@ const UploadPayslip = () => {
                 setUploadResult(data);
                 setSelectedFile(null);
                 if (fileInputRef.current) fileInputRef.current.value = '';
+                fetchPayslipList();
             } else {
                 toaster.error(data?.error?.message);
             }
@@ -157,6 +219,26 @@ const UploadPayslip = () => {
         }
     };
 
+    const handleFinalize = async () => {
+        const companyId = getCompanyId();
+        if (!companyId) return;
+        setIsFinalizing(true);
+        try {
+            const response = await finalizePayslip({ companyId, month, year });
+            if (response?.success) {
+                toaster.success(response?.message);
+                fetchPayslipList();
+            } else {
+                toaster.error(response?.error?.message);
+            }
+        } catch (error) {
+            const message = error?.data?.message;
+            toaster.error(message);
+        } finally {
+            setIsFinalizing(false);
+        }
+    };
+
     const handleMonthSelect = (value) => {
         setMonth(value);
         validateField('month', value);
@@ -196,7 +278,7 @@ const UploadPayslip = () => {
                             />
                         </div>
 
-                        {!uploadResult ? (
+                        {!uploadResult && payslipList.length === 0 ? (
                             <div className="upload-payslip-zone-wrapper">
                                 <div className="upload-payslip-row grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div
@@ -276,13 +358,13 @@ const UploadPayslip = () => {
                         ) : (
                             <>
                                 <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
-                                    {uploadResult.data && (
+                                    {uploadResult?.data ? (
                                         <div className="upload-payslip-summary flex flex-wrap items-center gap-4 text-sm">
                                             <span className="upload-payslip-status upload-payslip-status-total">Total records: {uploadResult.data.totalRecords ?? 0}</span>
                                             <span className="upload-payslip-status upload-payslip-status-success">Success: {uploadResult.data.successCount ?? 0}</span>
                                             <span className="upload-payslip-status upload-payslip-status-failed">Failed: {uploadResult.data.failureCount ?? 0}</span>
                                         </div>
-                                    )}
+                                    ) : null}
                                     <div className="flex flex-wrap items-center gap-3 ml-auto">
                                         <Button
                                             type="button"
@@ -315,39 +397,132 @@ const UploadPayslip = () => {
                                     accept=".xlsx"
                                     onChange={handleFileChange}
                                 />
-                                <div className="upload-payslip-results">
-                                    {uploadResult.data && (
-                                        <>
-                                            <div className="overflow-x-auto border border-gray-200 rounded-lg">
-                                                <table className="upload-payslip-table min-w-full divide-y divide-gray-200">
-                                                    <thead className="bg-gray-50">
-                                                        <tr>
-                                                            <th className="upload-payslip-th">Employee ID</th>
-                                                            <th className="upload-payslip-th">Employee Name</th>
-                                                            <th className="upload-payslip-th">Status</th>
-                                                            <th className="upload-payslip-th">Message</th>
+                                {uploadResult?.data && (
+                                    <div className="upload-payslip-results mb-6">
+                                        <div className="overflow-x-auto border border-gray-200 rounded-lg">
+                                            <table className="upload-payslip-table min-w-full divide-y divide-gray-200">
+                                                <thead className="bg-gray-50">
+                                                    <tr>
+                                                        <th className="upload-payslip-th">Employee ID</th>
+                                                        <th className="upload-payslip-th">Employee Name</th>
+                                                        <th className="upload-payslip-th">Status</th>
+                                                        <th className="upload-payslip-th">Message</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="bg-white divide-y divide-gray-200">
+                                                    {(uploadResult.data.results || []).map((row, idx) => (
+                                                        <tr key={row.employeeId || idx} className="upload-payslip-tr">
+                                                            <td className="upload-payslip-td">{row.employeeId ?? '—'}</td>
+                                                            <td className="upload-payslip-td">{row.employeeName ?? '—'}</td>
+                                                            <td className="upload-payslip-td">
+                                                                <span className={`upload-payslip-status upload-payslip-status-${(row.status || '').toLowerCase()}`}>
+                                                                    {row.status ?? '—'}
+                                                                </span>
+                                                            </td>
+                                                            <td className="upload-payslip-td upload-payslip-td-message">{row.message ?? '—'}</td>
                                                         </tr>
-                                                    </thead>
-                                                    <tbody className="bg-white divide-y divide-gray-200">
-                                                        {(uploadResult.data.results || []).map((row, idx) => (
-                                                            <tr key={row.employeeId || idx} className="upload-payslip-tr">
-                                                                <td className="upload-payslip-td">{row.employeeId ?? '—'}</td>
-                                                                <td className="upload-payslip-td">{row.employeeName ?? '—'}</td>
-                                                                <td className="upload-payslip-td">
-                                                                    <span className={`upload-payslip-status upload-payslip-status-${(row.status || '').toLowerCase()}`}>
-                                                                        {row.status ?? '—'}
-                                                                    </span>
-                                                                </td>
-                                                                <td className="upload-payslip-td upload-payslip-td-message">{row.message ?? '—'}</td>
-                                                            </tr>
-                                                        ))}
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </>
-                                    )}
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                )}
+                            </>
+                        )}
+
+                        {payslipList.length > 0 && (
+                            <>
+                                <div className="upload-payslip-list mt-6">
+                                    <div className="overflow-x-auto border border-gray-200 rounded-lg">
+                                    <table className="upload-payslip-table min-w-full divide-y divide-gray-200">
+                                        <thead className="bg-gray-50">
+                                            <tr>
+                                                <th className="upload-payslip-th">Employee ID</th>
+                                                <th className="upload-payslip-th text-center">Working Days</th>
+                                                <th className="upload-payslip-th text-center">Present Days</th>
+                                                <th className="upload-payslip-th text-center">Absent Days</th>
+                                                <th className="upload-payslip-th text-right">Total Earnings</th>
+                                                <th className="upload-payslip-th text-right">Total Deductions</th>
+                                                <th className="upload-payslip-th text-right">Net Salary</th>
+                                                <th className="upload-payslip-th upload-payslip-th-actions">Components</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="bg-white divide-y divide-gray-200">
+                                            {payslipList.map((row) => {
+                                                const edited = editedPresentDays[row.payslipId];
+                                                const currentPresentDays = edited !== undefined ? edited : row.presentDays;
+                                                const hasPresentDaysChanged = edited !== undefined && edited !== '' && Number(edited) !== Number(row.presentDays);
+                                                const isCalculating = calculatingPayslipId === row.payslipId;
+                                                return (
+                                                    <tr key={row.payslipId} className="upload-payslip-tr">
+                                                        <td className="upload-payslip-td">{row.employeeId ?? '—'}</td>
+                                                        <td className="upload-payslip-td text-center">{row.workingDays ?? '—'}</td>
+                                                        <td className="upload-payslip-td text-center">
+                                                            <div className="flex items-center justify-center gap-2">
+                                                                <Input
+                                                                    type="number"
+                                                                    min={0}
+                                                                    value={currentPresentDays === undefined || currentPresentDays === null || currentPresentDays === '' ? '' : currentPresentDays}
+                                                                    onChange={(e) => handlePresentDaysChange(row.payslipId, e.target.value)}
+                                                                    className="upload-payslip-present-input-wrapper"
+                                                                />
+                                                                {hasPresentDaysChanged && (
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => handleCalculate(row)}
+                                                                        disabled={isCalculating}
+                                                                        className="upload-payslip-calc-btn p-1 rounded text-[#f26522] hover:bg-orange-50 disabled:opacity-50"
+                                                                        title="Calculate"
+                                                                        aria-label="Calculate"
+                                                                    >
+                                                                        <Icon icon={isCalculating ? 'eos-icons:loading' : 'mdi:calculator'} className="w-5 h-5" />
+                                                                    </button>
+                                                                )}
+                                                            </div>
+                                                        </td>
+                                                        <td className="upload-payslip-td text-center">{row.absentDays ?? '—'}</td>
+                                                        <td className="upload-payslip-td text-right">{row.totalEarnings ?? '—'}</td>
+                                                        <td className="upload-payslip-td text-right">{row.totalDeductions ?? '—'}</td>
+                                                        <td className="upload-payslip-td text-right font-medium">{row.netSalary ?? '—'}</td>
+                                                        <td className="upload-payslip-td upload-payslip-td-actions">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setPayslipDetailsPopup(row)}
+                                                                className="upload-payslip-view-btn p-1.5 rounded text-[#f26522] hover:bg-orange-50"
+                                                            >
+                                                                <Icon icon="mdi:eye-outline" className="w-5 h-5" />
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                    </div>
+                                </div>
+                                <div className="upload-payslip-submit mt-6 flex justify-end">
+                                    <Button
+                                        type="button"
+                                        variant="primary"
+                                        onClick={handleFinalize}
+                                        disabled={isFinalizing}
+                                    >
+                                        {isFinalizing ? 'Submiting...' : 'Submit payslip'}
+                                    </Button>
                                 </div>
                             </>
+                        )}
+
+                        {payslipDetailsPopup && (
+                            <Popup
+                                open={!!payslipDetailsPopup}
+                                onClose={() => setPayslipDetailsPopup(null)}
+                                header={`Payslip details — ${payslipDetailsPopup.employeeId ?? 'Employee'}`}
+                                maxWidth="md"
+                                fullWidth
+                            >
+                                <PayslipDetailsContent payslip={payslipDetailsPopup} />
+                            </Popup>
                         )}
                     </div>
                 </div>

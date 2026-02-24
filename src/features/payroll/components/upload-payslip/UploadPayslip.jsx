@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import * as yup from 'yup';
 import { Icon } from '@iconify/react';
 import { Breadcrumb } from '../../../../components/Breadcrumb/Breadcrumb';
@@ -60,6 +60,18 @@ const UploadPayslip = () => {
     const [errors, setErrors] = useState({});
     const [isDownloading, setIsDownloading] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [uploadResult, setUploadResult] = useState(null);
+
+    const monthOptions = months.map((eachMonth) => ({
+        ...eachMonth,
+        disabled: year > currentYear ? true : year === currentYear ? eachMonth.value > currentMonth : false,
+    }));
+
+    useEffect(() => {
+        if (year === currentYear && month > currentMonth) {
+            setMonth(currentMonth);
+        }
+    }, [year, month, currentYear, currentMonth]);
 
     const validateField = async (field, value) => {
         try {
@@ -70,10 +82,29 @@ const UploadPayslip = () => {
         }
     };
 
-    const handleFile = (file) => {
+    const handleFile = async (file) => {
         if (!file) return;
         setSelectedFile(file);
         validateField('file', file);
+
+        const companyId = getCompanyId();
+        setIsSubmitting(true);
+        try {
+            const data = await uploadPayslip(file, { companyId, month, year });
+            if (data?.success) {
+                toaster.success(data.message);
+                setUploadResult(data);
+                setSelectedFile(null);
+                if (fileInputRef.current) fileInputRef.current.value = '';
+            } else {
+                toaster.error(data?.error?.message);
+            }
+        } catch (error) {
+            const message = error?.data?.message;
+            toaster.error(message);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const handleFileChange = (e) => {
@@ -118,13 +149,8 @@ const UploadPayslip = () => {
             window.URL.revokeObjectURL(url);
             toaster.success('Template downloaded');
         } catch (error) {
-            if (error.response) {
-                const { message } = error.response.data?.error || {};
-                toaster.error(message);
-            } else if (error.data) {
-                const { message } = error.data.error || {};
+            const message = error?.data?.message;
             toaster.error(message);
-            }
         }
         finally {
             setIsDownloading(false);
@@ -141,41 +167,6 @@ const UploadPayslip = () => {
         validateField('year', value);
     };
 
-    const handleSubmit = async (e) => {
-        e?.preventDefault();
-        setErrors({});
-        const payload = { month, year, file: selectedFile };
-        try {
-            await uploadPayslipSchema.validate(payload, { abortEarly: false });
-        } catch (error) {
-            if (error.inner) {
-                const validationErrors = {};
-                error.inner.forEach((err) => {
-                    if (err.path) validationErrors[err.path] = err.message;
-                });
-                setErrors(validationErrors);
-            }
-            return;
-        }
-
-        const companyId = getCompanyId();
-        setIsSubmitting(true);
-        try {
-            const data = await uploadPayslip(selectedFile, { companyId, month, year });
-            if (data?.success) {
-                toaster.success(data.message);
-                setSelectedFile(null);
-                if (fileInputRef.current) fileInputRef.current.value = '';
-            } else {
-                toaster.error(data?.error?.message || data?.message || 'Upload failed');
-            }
-        } catch (err) {
-            const message = err.response?.data?.message;
-            toaster.error(message);
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
 
     return (
         <>
@@ -183,29 +174,10 @@ const UploadPayslip = () => {
                 <div className="upload-payslip-card bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
                     <div className="upload-payslip-header border-b border-gray-200 px-6 py-4">
                         <h1 className="text-xl font-semibold text-gray-800">Upload Payslip</h1>
-                        <Button
-                            type="button"
-                            variant="outline"
-                            size="default"
-                            onClick={handleDownloadSample}
-                            disabled={isDownloading}
-                            className="inline-flex items-center gap-2"
-                        >
-                            <Icon icon="mdi:download" className="w-5 h-5" />
-                            {isDownloading ? 'Downloading...' : 'Download sample Excel'}
-                        </Button>
                     </div>
 
                     <div className="upload-payslip-body p-6 space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <Dropdown
-                                label="Month"
-                                items={months}
-                                selectedValue={month}
-                                onSelect={handleMonthSelect}
-                                placeholder="Select month"
-                                error={errors.month}
-                            />
                             <Dropdown
                                 label="Year"
                                 items={yearOptions}
@@ -214,74 +186,169 @@ const UploadPayslip = () => {
                                 placeholder="Select year"
                                 error={errors.year}
                             />
+                            <Dropdown
+                                label="Month"
+                                items={monthOptions}
+                                selectedValue={month}
+                                onSelect={handleMonthSelect}
+                                placeholder="Select month"
+                                error={errors.month}
+                            />
                         </div>
 
-                        <div className="upload-payslip-zone-wrapper">
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Upload file <span className="text-red-500">*</span>
-                            </label>
-                            <div className='flex justify-center w-[100%]'>
-                                <div
-                                    className={`upload-payslip-zone w-[500px] ${selectedFile ? 'has-file' : ''} ${errors.file ? 'has-error' : ''}`}
-                                    onDragOver={handleDragOver}
-                                    onDrop={handleDrop}
-                                    onClick={handleUploadClick}
-                                    role="button"
-                                    tabIndex={0}
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Enter' || e.key === ' ') {
-                                            e.preventDefault();
-                                            handleUploadClick();
-                                        }
-                                    }}
-                                >
-                                    <input
-                                        ref={fileInputRef}
-                                        type="file"
-                                        className="hidden"
-                                        accept=".xlsx"
-                                        onChange={handleFileChange}
-                                    />
-                                    {selectedFile ? (
-                                        <div className="upload-payslip-file-info">
-                                            <Icon icon="mdi:file-document-outline" className="upload-payslip-file-icon" />
-                                            <span className="upload-payslip-file-name">{selectedFile.name}</span>
-                                            <button
-                                                type="button"
-                                                className="upload-payslip-remove"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleRemoveFile();
-                                                }}
-                                                aria-label="Remove file"
-                                            >
-                                                <Icon icon="mdi:close-circle" />
-                                            </button>
+                        {!uploadResult ? (
+                            <div className="upload-payslip-zone-wrapper">
+                                <div className="upload-payslip-row grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div
+                                        className={`upload-payslip-zone upload-payslip-zone-download flex-1 ${isDownloading ? 'is-disabled' : ''}`}
+                                        onClick={() => !isDownloading && handleDownloadSample()}
+                                        role="button"
+                                        tabIndex={isDownloading ? -1 : 0}
+                                        onKeyDown={(e) => {
+                                            if (!isDownloading && (e.key === 'Enter' || e.key === ' ')) {
+                                                e.preventDefault();
+                                                handleDownloadSample();
+                                            }
+                                        }}
+                                        aria-disabled={isDownloading}
+                                    >
+                                        <Icon icon={icons.downloadExcel} className="upload-payslip-icon" />
+                                        <p className="upload-payslip-text">
+                                            {isDownloading
+                                                ? 'Downloading...'
+                                                : (() => {
+                                                    const monthLabel = months.find((m) => m.value === month)?.label;
+                                                    return monthLabel && year
+                                                        ? `Download template for ${monthLabel} ${year}`
+                                                        : 'Download template';
+                                                })()}
+                                        </p>
+                                        <p className="upload-payslip-sub">Click to get the template</p>
+                                    </div>
+                                    <div
+                                        className={`upload-payslip-zone flex-1 ${selectedFile ? 'has-file' : ''} ${errors.file ? 'has-error' : ''}`}
+                                        onDragOver={handleDragOver}
+                                        onDrop={handleDrop}
+                                        onClick={handleUploadClick}
+                                        role="button"
+                                        tabIndex={0}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' || e.key === ' ') {
+                                                e.preventDefault();
+                                                handleUploadClick();
+                                            }
+                                        }}
+                                    >
+                                        <input
+                                            ref={fileInputRef}
+                                            type="file"
+                                            className="hidden"
+                                            accept=".xlsx"
+                                            onChange={handleFileChange}
+                                        />
+                                        {selectedFile ? (
+                                            <div className="upload-payslip-file-info">
+                                                <Icon icon="mdi:file-document-outline" className="upload-payslip-file-icon" />
+                                                <span className="upload-payslip-file-name">{selectedFile.name}</span>
+                                                <button
+                                                    type="button"
+                                                    className="upload-payslip-remove"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleRemoveFile();
+                                                    }}
+                                                    aria-label="Remove file"
+                                                >
+                                                    <Icon icon="mdi:close-circle" />
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <>
+                                                <Icon icon={icons.uploadExcel} className="upload-payslip-icon" />
+                                                <p className="upload-payslip-text">Drag & drop your file here</p>
+                                                <p className="upload-payslip-sub">or click to browse (.xlsx)</p>
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+                                {errors.file && <p className="mt-2 text-sm text-red-600">{errors.file}</p>}
+                            </div>
+                        ) : (
+                            <>
+                                <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+                                    {uploadResult.data && (
+                                        <div className="upload-payslip-summary flex flex-wrap items-center gap-4 text-sm">
+                                            <span className="upload-payslip-status upload-payslip-status-total">Total records: {uploadResult.data.totalRecords ?? 0}</span>
+                                            <span className="upload-payslip-status upload-payslip-status-success">Success: {uploadResult.data.successCount ?? 0}</span>
+                                            <span className="upload-payslip-status upload-payslip-status-failed">Failed: {uploadResult.data.failureCount ?? 0}</span>
                                         </div>
-                                    ) : (
+                                    )}
+                                    <div className="flex flex-wrap items-center gap-3 ml-auto">
+                                        <Button
+                                            type="button"
+                                            variant="primary"
+                                            size="sm"
+                                            onClick={handleUploadClick}
+                                            disabled={isSubmitting}
+                                            className="inline-flex items-center gap-2"
+                                        >
+                                            <Icon icon={icons.uploadExcel} className="w-5 h-5" />
+                                            {isSubmitting ? 'Uploading...' : 'Upload'}
+                                        </Button>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={handleDownloadSample}
+                                            disabled={isDownloading}
+                                            className="inline-flex items-center gap-2"
+                                        >
+                                            <Icon icon={icons.downloadExcel} className="w-5 h-5" />
+                                            {isDownloading ? 'Downloading...' : 'Download template'}
+                                        </Button>
+                                    </div>
+                                </div>
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    className="hidden"
+                                    accept=".xlsx"
+                                    onChange={handleFileChange}
+                                />
+                                <div className="upload-payslip-results">
+                                    {uploadResult.data && (
                                         <>
-                                            <Icon icon={icons.uploadExcel} className="upload-payslip-icon" />
-                                            <p className="upload-payslip-text">Drag & drop your file here</p>
-                                            <p className="upload-payslip-sub">or click to browse (.xlsx)</p>
+                                            <div className="overflow-x-auto border border-gray-200 rounded-lg">
+                                                <table className="upload-payslip-table min-w-full divide-y divide-gray-200">
+                                                    <thead className="bg-gray-50">
+                                                        <tr>
+                                                            <th className="upload-payslip-th">Employee ID</th>
+                                                            <th className="upload-payslip-th">Employee Name</th>
+                                                            <th className="upload-payslip-th">Status</th>
+                                                            <th className="upload-payslip-th">Message</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody className="bg-white divide-y divide-gray-200">
+                                                        {(uploadResult.data.results || []).map((row, idx) => (
+                                                            <tr key={row.employeeId || idx} className="upload-payslip-tr">
+                                                                <td className="upload-payslip-td">{row.employeeId ?? '—'}</td>
+                                                                <td className="upload-payslip-td">{row.employeeName ?? '—'}</td>
+                                                                <td className="upload-payslip-td">
+                                                                    <span className={`upload-payslip-status upload-payslip-status-${(row.status || '').toLowerCase()}`}>
+                                                                        {row.status ?? '—'}
+                                                                    </span>
+                                                                </td>
+                                                                <td className="upload-payslip-td upload-payslip-td-message">{row.message ?? '—'}</td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
                                         </>
                                     )}
                                 </div>
-                            </div>
-                            {errors.file && <p className="mt-2 text-sm text-center text-red-600">{errors.file}</p>}
-                        </div>
-
-                        <div className="flex justify-end flex-wrap items-center gap-3 pt-2 border-t border-gray-100">
-                            <Button
-                                type="button"
-                                variant="primary"
-                                size="default"
-                                onClick={handleSubmit}
-                                disabled={isSubmitting}
-                                className="inline-flex items-center gap-2"
-                            >
-                                {isSubmitting ? 'Uploading...' : 'Submit'}
-                            </Button>
-                        </div>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>

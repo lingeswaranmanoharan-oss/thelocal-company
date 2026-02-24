@@ -46,6 +46,7 @@ export const icons = {
   masters: 'hugeicons:menu-square',
   eyeIcon: 'lsicon:view-outline',
   uploadExcel: 'material-symbols:upload-rounded',
+  downloadExcel: 'material-symbols:download-rounded',
   payroll: 'streamline-freehand:cash-payment-bill',
 
   checkCircle: 'mdi:check-circle',

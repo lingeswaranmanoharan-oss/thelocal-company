@@ -232,7 +232,7 @@ const UploadPayslip = () => {
                 toaster.error(response?.error?.message);
             }
         } catch (error) {
-            const message = error?.data?.message;
+            const message = error?.data?.error?.message;
             toaster.error(message);
         } finally {
             setIsFinalizing(false);

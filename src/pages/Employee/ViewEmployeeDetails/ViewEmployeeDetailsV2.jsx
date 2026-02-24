@@ -6,7 +6,7 @@ import { Breadcrumb } from '../../../components/Breadcrumb/Breadcrumb';
 import ViewEmployeesDetail from '../../../features/employee/components/ViewEmployeeDetailsData/ViewEmployeeDetails';
 import ViewEmployeeDetailsData from '../../../features/employee/components/ViewEmployeeDetailsData/ViewEmployeeDetailsData';
 
-const ViewEmployeeDetails = () => {
+const ViewEmployeeDetailsV2 = () => {
   const { pathname } = useRouteInformation();
   const name = pathname?.split('/');
   useBreadcrumbs([
@@ -22,10 +22,10 @@ const ViewEmployeeDetails = () => {
   return (
     <div>
       <Breadcrumb />
-      <ViewEmployeeDetailsData />
-      {/* <ViewEmployeesDetail/> */}
+      {/* <ViewEmployeeDetailsData /> */}
+      <ViewEmployeesDetail/>
     </div>
   );
 };
 
-export default ViewEmployeeDetails;
+export default ViewEmployeeDetailsV2;

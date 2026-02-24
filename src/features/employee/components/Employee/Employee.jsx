@@ -159,7 +159,7 @@ const EachEmployeeRow = ({ each, pathname, names, getEmployees }) => {
           !pathname.includes('pending') && (
             <div className="w-full flex justify-center gap-1">
               <ViewIconButton
-                requestedPath={`/employees/${names[2]}/viewEmployeeDetails/${each.id}`}
+                requestedPath={`/employees/${names[2]}/${ pathname.includes('onboarded') ? 'viewEmployeeDetailsV2' : 'viewEmployeeDetails'}/${each.id}`}
               />
               {pathname.includes('onboarded') && (
                 <IconButton

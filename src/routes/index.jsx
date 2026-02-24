@@ -7,7 +7,7 @@ import { ProtectedRoute } from './ProtectedRoute';
 import App from '../App';
 import EmployeeOnboard from '../pages/Employee/Onboard/Onboard';
 import EmployeePage from '../pages/Employee/employee_page';
-import ViewEmployeeDetails from '../pages/employee/ViewEmployeeDetails/ViewEmployeeDetails';
+import ViewEmployeeDetailsV2 from '../pages/Employee/ViewEmployeeDetails/ViewEmployeeDetailsV2';
 import Designation from '../pages/masters/designations/Designation';
 import Department from '../pages/masters/departments/Department';
 import EmployeeTypesPage from '../pages/masters/employement-types/employeeTypespage';
@@ -22,6 +22,7 @@ import ChangePasswordPage from '../pages/auth/ChangePasswordPage';
 import GeneratePayslipPage from '../pages/payroll/GeneratePayslipPage';
 import UploadPayslipPage from '../pages/payroll/UploadPayslipPage';
 import BusinessDaysPage from '../pages/holidays/businessDays/BusinessDaysPage';
+import ViewEmployeeDetails from '../pages/Employee/ViewEmployeeDetails/ViewEmployeeDetails';
 
 export const router = createBrowserRouter([
   {
@@ -120,6 +121,10 @@ export const router = createBrowserRouter([
       {
         path: '/employees/requests',
         element: <EmployeePage />,
+      },
+      {
+        path: '/employees/:status/viewEmployeeDetailsV2/:companyId',
+        element: <ViewEmployeeDetailsV2 />,
       },
       {
         path: '/employees/:status/viewEmployeeDetails/:companyId',

@@ -115,8 +115,8 @@ const UploadPayslip = () => {
                 delete next[payslipId];
                 return next;
             });
-        } catch (err) {
-            const message = error?.data?.message;
+        } catch (error) {
+            const message = error?.data?.error?.message;
             toaster.error(message);
         } finally {
             setCalculatingPayslipId(null);

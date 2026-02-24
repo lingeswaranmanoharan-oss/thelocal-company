@@ -195,7 +195,7 @@ const EachEmployeeRow = ({ each, pathname, names, getEmployees }) => {
           open={salaryPopup}
           onClose={handleCloseSalaryPopup}
           header="Salary Break Up"
-          maxWidth="sm"
+          maxWidth="md"
         >
           <AddSalaryPopup
             employeeId={each.id}
@@ -236,6 +236,7 @@ const Employee = () => {
     apiState?.data?.data?.content?.map((each) => {
       return (
         <EachEmployeeRow
+          key={each.id}
           each={each}
           pathname={pathname}
           names={names}

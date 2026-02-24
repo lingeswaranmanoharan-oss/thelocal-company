@@ -8,7 +8,7 @@ import { Button } from '../../../../components/Button/Button';
 import { Input } from '../../../../components/Input/Input';
 import { Dropdown } from '../../../../components/Dropdown/Dropdown';
 import { apiStatusConditions } from '../../../../utils/functions';
-import { apiStatusConstants } from '../../../../Utils/enum';
+import { apiStatusConstants } from '../../../../utils/enum';
 import { addBusinessDays, updateBusinessDays } from '../../services/services';
 import toaster from '../../../../services/toasterService';
 import dayjs from 'dayjs';
@@ -22,10 +22,29 @@ const schema = yup.object({
   month: yup.number().typeError('Month must be a number').required('Month is required'),
   workingDays: yup
     .number()
-    .transform((_, value) => (value === '' ? undefined : Number(value)))
+    .transform((value, originalValue) => {
+      if (originalValue === '') return undefined;
+      return Number(originalValue);
+    })
     .typeError('Only numbers allowed')
     .required('Working days required')
-    .max(25, 'Max working days 25 only'),
+
+    // ❌ NEGATIVE CHECK
+    .test('no-negative', 'Negative values are not allowed', (_, context) => {
+      const raw = context.originalValue;
+      if (!raw) return true;
+      return !String(raw).trim().startsWith('-');
+    })
+
+    // ❌ DECIMAL CHECK
+    .test('no-decimals', 'Decimals are not allowed', (_, context) => {
+      const raw = context.originalValue;
+      if (!raw) return true;
+      return !String(raw).includes('.');
+    })
+
+    .min(1, 'Working days must be greater than 0')
+    .max(30, 'Max working days 30 only')
 });
 
 const AddBusinessDays = ({ onClose, getBusinessDays, months, editData, isEditMode }) => {
@@ -132,6 +151,7 @@ const AddBusinessDays = ({ onClose, getBusinessDays, months, editData, isEditMod
         />
         <Input
           label="Working Days"
+          inputMode="numeric"
           {...register('workingDays')}
           error={errors?.workingDays?.message}
         />

@@ -1,4 +1,4 @@
-import React ,{forwardRef,useImperativeHandle}from 'react';
+import React, { forwardRef, useImperativeHandle } from 'react';
 import { Input } from '../../../components/Input/Input';
 import { Button } from '../../../components/Button/Button';
 import { useForm, Watch } from 'react-hook-form';
@@ -11,8 +11,11 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import DateInput from '../../../components/DateInput/DateInput';
 
 const schema = yup.object({
-  holidayName: yup.string().required('Title Required'),
-//   weekdayName: yup.string().required(' Required'),
+  holidayName: yup
+    .string()
+    .required('Title Required')
+    .max(50, 'Title must not exceed 50 characters'),
+  //   weekdayName: yup.string().required(' Required'),
   holidayDate: yup.string().required('Date Required'),
 });
 
@@ -26,8 +29,10 @@ const getWeekdayName = (dateString) => {
   });
 };
 
-const AddHolidayForm = ({ onClose, getHolidaysCalender, editData, isEditMode,setApiStatus },ref) => {
-
+const AddHolidayForm = (
+  { onClose, getHolidaysCalender, editData, isEditMode, setApiStatus },
+  ref,
+) => {
   const {
     register,
     handleSubmit,
@@ -35,16 +40,16 @@ const AddHolidayForm = ({ onClose, getHolidaysCalender, editData, isEditMode,set
     reset,
     watch,
     setValue,
-    trigger
+    trigger,
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
       optionalFlag: false,
     },
+    mode:"onChange"
   });
 
   const onSubmit = async (data) => {
-    
     setApiStatus(apiStatusConstants.inProgress);
     try {
       const response = isEditMode ? await updateHoliday(editData.id, data) : await addHoliday(data);
@@ -62,7 +67,7 @@ const AddHolidayForm = ({ onClose, getHolidaysCalender, editData, isEditMode,set
       // console.log(error.response.data?.error)
       setApiStatus(apiStatusConstants.failure);
       console.log(error);
-      toaster.error(error.response?.data?.error?.message||error?.data?.error?.message);
+      toaster.error(error.response?.data?.error?.message || error?.data?.error?.message);
     }
   };
 
@@ -82,26 +87,26 @@ const AddHolidayForm = ({ onClose, getHolidaysCalender, editData, isEditMode,set
     }
   }, [selectedDate, setValue]);
 
-  const handleDateChange=(value)=>{
-    console.log(value)
-    setValue('holidayDate',value)
-    trigger('holidayDate')
-  }
+  const handleDateChange = (value) => {
+    console.log(value);
+    setValue('holidayDate', value);
+    trigger('holidayDate');
+  };
 
-  useImperativeHandle(ref,()=>({
-    submitForm:()=>handleSubmit(onSubmit)(),
-  }))
+  useImperativeHandle(ref, () => ({
+    submitForm: () => handleSubmit(onSubmit)(),
+  }));
 
   return (
-    <form  className="bg-white p-4 ">
+    <form className="bg-white p-4 ">
       <section className="flex flex-col gap-3 mb-4">
         <Input label="Title" {...register('holidayName')} error={errors.holidayName?.message} />
         <DateInput
-        label="Date"
-        format="DD-MM-YYYY"
-        handleChange={handleDateChange}
-        value={watch('holidayDate')}
-         error={errors.holidayDate?.message}
+          label="Date"
+          format="DD-MM-YYYY"
+          handleChange={handleDateChange}
+          value={watch('holidayDate')}
+          error={errors.holidayDate?.message}
         />
         <Input
           label="Weekday Name"
@@ -115,7 +120,6 @@ const AddHolidayForm = ({ onClose, getHolidaysCalender, editData, isEditMode,set
           {...register('optionalFlag')}
         />
       </section>
-      
     </form>
   );
 };

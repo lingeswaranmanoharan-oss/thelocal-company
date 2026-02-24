@@ -5,89 +5,99 @@ import { Button } from '../../../../components/Button/Button';
 import { addEmployeeSalary } from '../../services/services';
 import toaster from '../../../../services/toasterService';
 
-const basciMaxDigit = 999999999
-const maxDigit = 99999999
+const basciMaxDigit = 999999999;
+const maxDigit = 99999999;
 
 const salaryBreakupSchema = yup.object().shape({
-  basic: yup
+  basicMonthly: yup
     .number()
     .nullable()
     .required('Basic is required')
     .min(0, 'Basic must be 0 or greater')
     .max(basciMaxDigit, 'Basic must not exceed 9 digits'),
-  houseRentAllowancePct: yup
+  hraMonthly: yup
     .number()
+    .transform((value, originalValue) => {
+      // handle empty input OR invalid number
+      return isNaN(value) ? null : value;
+    })
     .nullable()
     .required('House Rent Allowance is required')
     .min(0, 'House Rent Allowance must be 0 or greater')
     .max(100, 'House Rent Allowance must not exceed 100'),
-  conveyance: yup
+  conveyanceMonthly: yup
     .number()
     .nullable()
     .required('Conveyance Allowance is required')
     .min(0, 'Conveyance Allowance must be 0 or greater')
     .max(maxDigit, 'Conveyance Allowance must not exceed 8 digits'),
-  medical: yup
+  medicalMonthly: yup
     .number()
     .nullable()
     .required('Medical Allowance is required')
     .min(0, 'Medical Allowance must be 0 or greater')
     .max(maxDigit, 'Medical Allowance must not exceed 8 digits'),
-  adhoc: yup
+  adhocMonthly: yup
     .number()
     .nullable()
     .required('Adhoc Allowance is required')
     .min(0, 'Adhoc Allowance must be 0 or greater')
     .max(maxDigit, 'Adhoc Allowance must not exceed 8 digits'),
-  food: yup
+  foodMonthly: yup
     .number()
     .nullable()
     .required('Food Allowance is required')
     .min(0, 'Food Allowance must be 0 or greater')
     .max(maxDigit, 'Food Allowance must not exceed 8 digits'),
-  travel: yup
+  travelMonthly: yup
     .number()
     .nullable()
     .required('Travel Allowance is required')
     .min(0, 'Travel Allowance must be 0 or greater')
     .max(maxDigit, 'Travel Allowance must not exceed 8 digits'),
-  lta: yup
+  ltaMonthly: yup
     .number()
     .nullable()
     .required('LTA (Leave Travel Allowance) is required')
     .min(0, 'LTA (Leave Travel Allowance) must be 0 or greater')
     .max(maxDigit, 'LTA (Leave Travel Allowance) must not exceed 8 digits'),
-  bonus: yup
+  bonusMonthly: yup
     .number()
     .nullable()
     .required('Bonus is required')
     .min(0, 'Bonus must be 0 or greater')
     .max(maxDigit, 'Bonus must not exceed 8 digits'),
-  employerPfPct: yup
+  employerPfMonthly: yup
     .number()
+    .transform((value, originalValue) => {
+      return isNaN(value) ? null : value;
+    })
     .nullable()
     .required('Employers cont. to Provident Fund (%) is required')
     .min(0, 'Employers cont. to Provident Fund must be 0 or greater')
     .max(100, 'Employers cont. to Provident Fund must not exceed 100'),
-  employeePfPct: yup
+  employeePfMonthly: yup
     .number()
+    .transform((value, originalValue) => {
+      return isNaN(value) ? null : value;
+    })
     .nullable()
     .required('Employees cont. to Provident Fund (%) is required')
     .min(0, 'Employees cont. to Provident Fund must be 0 or greater')
     .max(100, 'Employees cont. to Provident Fund must not exceed 100'),
-  employerEsic: yup
+  employerEsicMonthly: yup
     .number()
     .nullable()
     .required('Employers cont. to ESIC is required')
     .min(0, 'Employers cont. to ESIC must be 0 or greater')
     .max(maxDigit, 'Employers cont. to ESIC must not exceed 8 digits'),
-  employeeEsic: yup
+  employeeEsicMonthly: yup
     .number()
     .nullable()
     .required('Employees cont. to ESIC is required')
     .min(0, 'Employees cont. to ESIC must be 0 or greater')
     .max(maxDigit, 'Employees cont. to ESIC must not exceed 8 digits'),
-  professionTax: yup
+  professionalTaxMonthly: yup
     .number()
     .nullable()
     .required('Profession Tax is required')
@@ -98,78 +108,95 @@ const salaryBreakupSchema = yup.object().shape({
 const HRA_PCT_FIELD = { key: 'houseRentAllowancePct', label: 'House Rent Allowance' };
 
 const MANUAL_AMOUNT_FIELDS = [
-  { key: 'conveyance', label: 'Conveyance Allowance' },
-  { key: 'medical', label: 'Medical Allowance' },
-  { key: 'adhoc', label: 'Adhoc Allowance' },
-  { key: 'food', label: 'Food Allowance' },
-  { key: 'travel', label: 'Travel Allowance' },
-  { key: 'lta', label: 'LTA (Leave Travel Allowance)' },
-  { key: 'bonus', label: 'Bonus' },
+  { key: 'conveyanceMonthly', label: 'Conveyance Allowance' },
+  { key: 'medicalMonthly', label: 'Medical Allowance' },
+  { key: 'adhocMonthly', label: 'Adhoc Allowance' },
+  { key: 'foodMonthly', label: 'Food Allowance' },
+  { key: 'travelMonthly', label: 'Travel Allowance' },
+  { key: 'ltaMonthly', label: 'LTA (Leave Travel Allowance)' },
+  { key: 'bonusMonthly', label: 'Bonus' },
 ];
 
 const defaultFormData = {
-  basic: null,
-  houseRentAllowancePct: null,
-  conveyance: null,
-  medical: null,
-  adhoc: null,
-  food: null,
-  travel: null,
-  lta: null,
-  bonus: null,
-  employerPfPct: null,
-  employeePfPct: null,
-  employerEsic: null,
-  employeeEsic: null,
-  professionTax: null,
+  basicMonthly: null,
+  hraMonthly: null,
+  conveyanceMonthly: null,
+  medicalMonthly: null,
+  adhocMonthly: null,
+  foodMonthly: null,
+  travelMonthly: null,
+  ltaMonthly: null,
+  bonusMonthly: null,
+  employerPfMonthly: null,
+  employeePfMonthly: null,
+  employerEsicMonthly: null,
+  employeeEsicMonthly: null,
+  professionalTaxMonthly: null,
+};
+
+const calculatePercentage = (amount, basic) => {
+  if (!amount || !basic) return null;
+  return Number(((amount / basic) * 100).toFixed(2));
 };
 
 const FormRow = ({ label, children, yearlyValue, className = '', error }) => (
   <div className={className}>
-    <div className="flex items-stretch gap-4 py-2">
+    <div className="flex items-stretch gap-4 py-2 ">
       <div className="flex flex-1 items-center gap-4 min-w-0">
-        <label className={"w-56 flex-shrink-0 text-sm font-medium text-gray-700"}>{label}</label>
-        <div className="flex-1 flex items-center justify-end gap-2 flex-wrap min-w-0">{children}</div>
+        <label className={'w-56 flex-shrink-0 text-sm font-medium text-gray-700'}>{label}</label>
+        <div className="flex-1 flex items-center justify-end gap-2 flex-wrap min-w-0">
+          {children}
+        </div>
       </div>
       <div className="w-36 flex-shrink-0 flex items-center justify-end">
         {yearlyValue != null && (
-          <Input type="number" value={yearlyValue} disabled className="w-full bg-gray-50 text-right" />
+          <Input
+            type="number"
+            value={yearlyValue}
+            disabled
+            className="w-full bg-gray-50 text-right"
+          />
         )}
       </div>
     </div>
     {error && (
       <div className="flex items-center gap-4">
         <span className="w-56" />
-        <div className="flex-1 text-sm text-red-600 mt-1 text-right">{error}</div>
+        <div className="flex-1 text-xs text-red-600 mt-1 text-right">{error}</div>
         <div className="w-36 flex-shrink-0" />
       </div>
     )}
   </div>
 );
-
 const mapApiDataToFormData = (data) => {
-  if (!data || typeof data !== 'object') return defaultFormData;
-  const basic = data.basic || 0;
-  const form = {
-    basic,
-    houseRentAllowancePct: ((data.hra) || 0) / basic * 100,
-    conveyance: data.conveyance ?? null,
-    medical: data.medical ?? null,
-    adhoc: data.adhoc ?? null,
-    food: data.food ?? null,
-    travel: data.travel ?? null,
-    lta: data.lta ?? null,
-    bonus: data.bonus ?? null,
-    employerPfPct:(data.employerPf / basic) * 100,
-    employeePfPct:(data.employerPf / basic) * 100,
-    employerEsic: data.employerEsic ?? null,
-    employeeEsic: data.employeeEsic ?? null,
-    professionTax: data.professionalTax ?? null,
+  if (!data) return defaultFormData;
+  const basic = data.basicMonthly ?? 0;
+
+  return {
+    basicMonthly: data.basicMonthly ?? null,
+    hraMonthly: calculatePercentage(data.hraMonthly, basic),
+    conveyanceMonthly: data.conveyanceMonthly ?? null,
+    medicalMonthly: data.medicalMonthly ?? null,
+    adhocMonthly: data.adhocMonthly ?? null,
+    foodMonthly: data.foodMonthly ?? null,
+    travelMonthly: data.travelMonthly ?? null,
+    ltaMonthly: data.ltaMonthly ?? null,
+    bonusMonthly: data.bonusMonthly ?? null,
+    employerPfMonthly: calculatePercentage(data.employerPfMonthly, basic),
+    employeePfMonthly: calculatePercentage(data.employeePfMonthly, basic),
+    employerEsicMonthly: data.employerEsicMonthly ?? null,
+    employeeEsicMonthly: data.employeeEsicMonthly ?? null,
+    professionalTaxMonthly: data.professionalTaxMonthly ?? null,
   };
-  return form;
 };
 
-const AddSalaryPopup = ({ employeeId, onClose, onSuccess, viewMode = false, initialData = null }) => {
+const AddSalaryPopup = ({
+  employeeId,
+  onClose,
+  onSuccess,
+  viewMode = false,
+  initialData = null,
+}) => {
   const [formData, setFormData] = useState(defaultFormData);
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
@@ -197,15 +224,23 @@ const AddSalaryPopup = ({ employeeId, onClose, onSuccess, viewMode = false, init
             const n = Number(value);
             return Number.isNaN(n) ? null : n;
           })();
-    const isPfPct = field === 'employerPfPct' || field === 'employeePfPct';
+    const isPfPct = field === 'employerPfMonthly' || field === 'employeePfMonthly';
+    const isEsic = field === 'employerEsicMonthly' || field === 'employeeEsicMonthly';
     setFormData((prev) => {
       const next = { ...prev, [field]: numValue };
-      if (isPfPct) next.employerPfPct = next.employeePfPct = numValue;
+      if (isPfPct) {
+        next.employerPfMonthly = numValue;
+        next.employeePfMonthly = numValue;
+      }
+      if (isEsic) {
+        next.employerEsicMonthly = numValue;
+        next.employeeEsicMonthly = numValue;
+      }
       return next;
     });
     if (isPfPct) {
-      await validateField('employerPfPct', numValue);
-      await validateField('employeePfPct', numValue);
+      await validateField('employerPfMonthly', numValue);
+      await validateField('employeePfMonthly', numValue);
     } else {
       await validateField(field, numValue);
     }
@@ -215,47 +250,86 @@ const AddSalaryPopup = ({ employeeId, onClose, onSuccess, viewMode = false, init
     handleChange(field, e.target.value);
   };
 
-  const basic = formData.basic || 0;
-  const hraAmount = Math.round((basic * (formData.houseRentAllowancePct || 0)) / 100);
-  const employerPfAmount = Math.round((basic * (formData.employerPfPct || 0)) / 100);
-  const employeePfAmount = Math.round((basic * (formData.employeePfPct || 0)) / 100);
+  const basic = formData.basicMonthly || 0;
+  const hraAmount = Math.round((basic * (formData.hraMonthly || 0)) / 100);
+  const employerPfAmount = Math.round((basic * (formData.employerPfMonthly || 0)) / 100);
+  const employeePfAmount = Math.round((basic * (formData.employeePfMonthly || 0)) / 100);
 
   const allowanceTotal =
-    (formData.conveyance || 0) +
-    (formData.medical || 0) +
-    (formData.adhoc || 0) +
-    (formData.food || 0) +
-    (formData.travel || 0) +
-    (formData.lta || 0) +
-    (formData.bonus || 0);
+    (formData.conveyanceMonthly || 0) +
+    (formData.medicalMonthly || 0) +
+    (formData.adhocMonthly || 0) +
+    (formData.foodMonthly || 0) +
+    (formData.travelMonthly || 0) +
+    (formData.ltaMonthly || 0) +
+    (formData.bonusMonthly || 0);
   const grossSalary = basic + hraAmount + allowanceTotal;
 
-  const { employerEsic, employeeEsic, professionTax } = formData;
-  const ctc = grossSalary + employerPfAmount + (employerEsic || 0);
-  const netTakeHome = grossSalary - employeePfAmount - (employeeEsic || 0) - (professionTax || 0);
+  const { employerEsicMonthly, employeeEsicMonthly, professionalTaxMonthly } = formData;
+  const ctc = grossSalary + employerPfAmount + (employerEsicMonthly || 0);
+  const netTakeHome =
+    grossSalary - employeePfAmount - (employeeEsicMonthly || 0) - (professionalTaxMonthly || 0);
 
-  const yearly = (value) => (value * 12);
+  const yearly = (value) => (value ?? 0) * 12;
+
+  const addAnnualFields = (monthlyData) => {
+    const payload = { ...monthlyData };
+
+    Object.entries(monthlyData).forEach(([key, value]) => {
+      if (key.endsWith('Monthly')) {
+        const annualKey = key.replace('Monthly', 'Annual');
+        payload[annualKey] = value == null ? null : yearly(value);
+      }
+    });
+
+    return payload;
+  };
+
+  const buildSalaryPayload = (formData, employeeId) => {
+    const basic = formData.basicMonthly ?? 0;
+
+    // 🔥 convert percentage → amount
+    const convertedData = {
+      ...formData,
+
+      hraMonthly: Math.round((basic * (formData.hraMonthly ?? 0)) / 100),
+
+      employerPfMonthly: Math.round((basic * (formData.employerPfMonthly ?? 0)) / 100),
+
+      employeePfMonthly: Math.round((basic * (formData.employeePfMonthly ?? 0)) / 100),
+    };
+
+    return {
+      employeeId,
+      ...addAnnualFields(convertedData),
+    };
+  };
 
   const submitSalaryData = async () => {
     try {
-      const payload = {
-        employeeId: employeeId,
-        basic,
-        hra: hraAmount,
-        conveyance: formData.conveyance ?? 0,
-        medical: formData.medical ?? 0,
-        adhoc: formData.adhoc ?? 0,
-        food: formData.food ?? 0,
-        travel: formData.travel ?? 0,
-        lta: formData.lta ?? 0,
-        bonus: formData.bonus ?? 0,
-        gross: grossSalary,
-        employerPf: employerPfAmount,
-        employerEsic: employerEsic ?? 0,
-        employeePf: employeePfAmount,
-        employeeEsic: employeeEsic ?? 0,
-        professionalTax: professionTax ?? 0,
-      };
+      // const payload = {
+      //   ...formData,
+      //   employeeId: employeeId,
+      //   basicMonthly: basic,
+      //   hraMonthly: hraAmount,
+      //   grossMonthly: grossSalary,
+      //   // conveyance: formData.conveyance ?? 0,
+      //   // medical: formData.medical ?? 0,
+      //   // adhoc: formData.adhoc ?? 0,
+      //   // food: formData.food ?? 0,
+      //   // travel: formData.travel ?? 0,
+      //   // lta: formData.lta ?? 0,
+      //   // bonus: formData.bonus ?? 0,
+      //   // gross: grossSalary,
+      //   // employerPf: employerPfAmount,
+      //   // employerEsic: employerEsic ?? 0,
+      //   // employeePf: employeePfAmount,
+      //   // employeeEsic: employeeEsic ?? 0,
+      //   // professionalTax: professionTax ?? 0,
+      // };
+
+      const payload = buildSalaryPayload(formData, employeeId);
+      console.log('Final payload is ', payload);
       const response = await addEmployeeSalary(payload);
       if (response?.success) {
         toaster.success(response?.message);
@@ -297,47 +371,71 @@ const AddSalaryPopup = ({ employeeId, onClose, onSuccess, viewMode = false, init
 
   return (
     <div className="flex flex-col max-h-[70vh] pt-2">
-      <form className="flex flex-col min-h-0 flex-1 flex" onSubmit={viewMode ? (e) => e.preventDefault() : handleSubmit}>
+      <form
+        className="flex flex-col min-h-0 flex-1 flex"
+        onSubmit={viewMode ? (e) => e.preventDefault() : handleSubmit}
+      >
         <div className="flex-1 overflow-y-auto min-h-0 space-y-1">
           <div className="flex items-center gap-4 py-2 border-b border-gray-200">
-            <div className="flex-1 flex items-center gap-4 min-w-0">
-              <span className={"w-56 flex-shrink-0 text-sm font-semibold text-gray-700"}>Monthly</span>
+            <div className="flex-1 flex items-center justify-end gap-6 min-w-0">
+              <span
+                className={'w-56 flex-shrink-0 text-sm font-semibold text-gray-700 text-end'}
+              ></span>
               <div className="flex-1" />
             </div>
-            <div className="w-36 flex-shrink-0 text-right text-sm font-semibold text-gray-700">Yearly</div>
+            <div className=" flex items-center justify-end gap-6 min-w-0">
+              <span className={'w-56 flex-shrink-0 text-sm font-semibold text-gray-700 text-end'}>
+                Monthly
+              </span>
+              <div className="flex-1" />
+            </div>
+            <div className="w-36 flex-shrink-0  text-sm font-semibold text-gray-700 text-center">
+              Yearly
+            </div>
           </div>
 
-          <FormRow label="Basic" yearlyValue={yearly(formData.basic)}>
+          <FormRow label="Basic" yearlyValue={yearly(formData.basicMonthly)}>
             <Input
               type="number"
               min={0}
-              value={formData.basic ?? ''}
-              onChange={(e) => !viewMode && handleNumberChange('basic', e)}
-              error={errors.basic}
+              value={formData.basicMonthly ?? ''}
+              onChange={(e) => !viewMode && handleNumberChange('basicMonthly', e)}
+              error={errors.basicMonthly}
               className="max-w-[140px]"
               disabled={viewMode}
             />
           </FormRow>
-          <FormRow label={HRA_PCT_FIELD.label} yearlyValue={yearly(hraAmount)} error={errors.houseRentAllowancePct}>
-            <Input
-              type="number"
-              min={0}
-              max={100}
-              value={formData.houseRentAllowancePct ?? ''}
-              onChange={(e) => !viewMode && handleNumberChange('houseRentAllowancePct', e)}
-              className="min-w-[120px] w-[120px]"
-              rightIcon={<span className="text-gray-500 text-sm font-medium">%</span>}
-              disabled={viewMode}
-            />
-            <Input
-              type="number"
-              value={hraAmount ?? ''}
-              disabled
-              className="max-w-[140px] bg-gray-100"
-            />
+          <FormRow
+            label={HRA_PCT_FIELD.label}
+            yearlyValue={yearly(hraAmount)}
+            error={errors.hraMonthly}
+          >
+            <div className="flex gap-3">
+              <Input
+                type="number"
+                min={0}
+                max={100}
+                value={formData.hraMonthly ?? ''}
+                onChange={(e) => !viewMode && handleNumberChange('hraMonthly', e)}
+                className="w-[100px]"
+                rightIcon={<span className="text-gray-500 text-sm font-medium">%</span>}
+                disabled={viewMode}
+              />
+              <Input
+                type="number"
+                value={hraAmount ?? ''}
+                disabled
+                className="w-[140px] bg-gray-100"
+              />
+            </div>
           </FormRow>
           {MANUAL_AMOUNT_FIELDS.map(({ key, label }) => (
-            <FormRow key={key} label={label} yearlyValue={yearly(formData[key])} error={errors[key]}>
+            <FormRow
+              key={key}
+              label={label}
+              yearlyValue={yearly(formData[key])}
+              error={errors[key]}
+            >
               <Input
                 type="number"
                 min={0}
@@ -349,38 +447,53 @@ const AddSalaryPopup = ({ employeeId, onClose, onSuccess, viewMode = false, init
             </FormRow>
           ))}
           <FormRow label="Gross Salary" yearlyValue={yearly(grossSalary)}>
-            <Input type="number" value={grossSalary} disabled className="max-w-[140px] bg-gray-100" />
+            <Input
+              type="number"
+              value={grossSalary}
+              disabled
+              className="max-w-[140px] bg-gray-100"
+            />
           </FormRow>
 
           <hr className="my-4 border-gray-200" />
 
           <div className="text-sm font-medium text-gray-700 mb-2">Add:</div>
           <div className="space-y-1">
-            <FormRow label="Employers cont. to Provident Fund" yearlyValue={yearly(employerPfAmount)} error={errors.employerPfPct}>
-              <Input
-                type="number"
-                min={0}
-                max={100}
-                value={formData.employerPfPct ?? ''}
-                onChange={(e) => !viewMode && handleNumberChange('employerPfPct', e)}
-                className="min-w-[120px] w-[120px]"
-                rightIcon={<span className="text-gray-500 text-sm font-medium">%</span>}
-                disabled={viewMode}
-              />
-              <Input
-                type="number"
-                value={employerPfAmount ?? ''}
-                disabled
-                className="max-w-[140px] bg-gray-100"
-              />
+            <FormRow
+              label="Employers cont. to Provident Fund"
+              yearlyValue={yearly(employerPfAmount)}
+              error={errors.employerPfMonthly}
+            >
+              <div className="flex gap-3">
+                <Input
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={formData.employerPfMonthly ?? ''}
+                  onChange={(e) => !viewMode && handleNumberChange('employerPfMonthly', e)}
+                  className="w-[100px]"
+                  rightIcon={<span className="text-gray-500 text-sm font-medium">%</span>}
+                  disabled={viewMode}
+                />
+                <Input
+                  type="number"
+                  value={employerPfAmount ?? ''}
+                  disabled
+                  className="max-w-[150px] bg-gray-100"
+                />
+              </div>
             </FormRow>
-            <FormRow label="Employers cont. to ESIC" yearlyValue={yearly(employerEsic)} error={errors.employerEsic}>
+            <FormRow
+              label="Employers cont. to ESIC"
+              yearlyValue={yearly(employerEsicMonthly)}
+              error={errors.employerEsicMonthly}
+            >
               <Input
                 type="number"
                 min={0}
-                value={formData.employerEsic ?? ''}
-                onChange={(e) => !viewMode && handleNumberChange('employerEsic', e)}
-                className="max-w-[140px]"
+                value={formData.employerEsicMonthly ?? ''}
+                onChange={(e) => !viewMode && handleNumberChange('employerEsicMonthly', e)}
+                className="max-w-[100px]"
                 disabled={viewMode}
               />
             </FormRow>
@@ -393,46 +506,65 @@ const AddSalaryPopup = ({ employeeId, onClose, onSuccess, viewMode = false, init
 
           <div className="text-sm font-medium text-gray-700 mb-2">Less:</div>
           <div className="space-y-1">
-            <FormRow label="Employees cont. to Provident Fund" yearlyValue={yearly(employeePfAmount)} error={errors.employeePfPct}>
-              <Input
-                type="number"
-                min={0}
-                max={100}
-                value={formData.employeePfPct ?? ''}
-                onChange={(e) => !viewMode && handleNumberChange('employeePfPct', e)}
-                className="min-w-[120px] w-[120px]"
-                rightIcon={<span className="text-gray-500 text-sm font-medium">%</span>}
-                disabled={viewMode}
-              />
-              <Input
-                type="number"
-                value={employeePfAmount ?? ''}
-                disabled
-                className="max-w-[140px] bg-gray-100"
-              />
+            <FormRow
+              label="Employees cont. to Provident Fund"
+              yearlyValue={yearly(employeePfAmount)}
+              error={errors.employeePfMonthly}
+            >
+              <div className="flex gap-3">
+                <Input
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={formData.employeePfMonthly ?? ''}
+                  onChange={(e) => !viewMode && handleNumberChange('employeePfMonthly', e)}
+                  className="w-[100px]"
+                  rightIcon={<span className="text-gray-500 text-sm font-medium">%</span>}
+                  disabled={viewMode}
+                />
+                <Input
+                  type="number"
+                  value={employeePfAmount ?? ''}
+                  disabled
+                  className="max-w-[140px] bg-gray-100"
+                />
+              </div>
             </FormRow>
-            <FormRow label="Employees cont. to ESIC" yearlyValue={yearly(employeeEsic)} error={errors.employeeEsic}>
+            <FormRow
+              label="Employees cont. to ESIC"
+              yearlyValue={yearly(employeeEsicMonthly)}
+              error={errors.employeeEsicMonthly}
+            >
               <Input
                 type="number"
                 min={0}
-                value={formData.employeeEsic ?? ''}
-                onChange={(e) => !viewMode && handleNumberChange('employeeEsic', e)}
+                value={formData.employeeEsicMonthly ?? ''}
+                onChange={(e) => !viewMode && handleNumberChange('employeeEsicMonthly', e)}
                 className="max-w-[140px]"
                 disabled={viewMode}
               />
             </FormRow>
-            <FormRow label="Profession Tax" yearlyValue={yearly(professionTax)} error={errors.professionTax}>
+            <FormRow
+              label="Profession Tax"
+              yearlyValue={yearly(professionalTaxMonthly)}
+              error={errors.professionalTaxMonthly}
+            >
               <Input
                 type="number"
                 min={0}
-                value={formData.professionTax ?? ''}
-                onChange={(e) => !viewMode && handleNumberChange('professionTax', e)}
+                value={formData.professionalTaxMonthly ?? ''}
+                onChange={(e) => !viewMode && handleNumberChange('professionalTaxMonthly', e)}
                 className="max-w-[140px]"
                 disabled={viewMode}
               />
             </FormRow>
             <FormRow label="Net take home salary monthly" yearlyValue={yearly(netTakeHome)}>
-              <Input type="number" value={netTakeHome} disabled className="max-w-[140px] bg-gray-100" />
+              <Input
+                type="number"
+                value={netTakeHome}
+                disabled
+                className="max-w-[140px] bg-gray-100"
+              />
             </FormRow>
           </div>
         </div>

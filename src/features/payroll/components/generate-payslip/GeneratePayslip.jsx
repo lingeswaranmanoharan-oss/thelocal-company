@@ -48,7 +48,6 @@ const GeneratePayslip = ({ employeeId: employeeIdFromRoute }) => {
     const requestedEmployeeId = employeeId;
     try {
       const response = await getGeneratePayslip({ companyId, employeeId, month: requestedMonth, year: requestedYear });
-      // Only update state if user hasn’t changed month/year/employee in the meantime (avoid stale response overwriting)
       if (requestedMonth === month && requestedYear === year && requestedEmployeeId === employeeId) {
         setPayslipData(response ?? null);
       }

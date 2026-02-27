@@ -40,3 +40,8 @@ export const finalizePayslip = async ({ companyId, month, year }) => {
   const response = await HttpService.post(apiEndpoints.finalizePayslip(companyId, month, year));
   return response;
 };
+
+export const getGeneratePayslip = async({companyId, employeeId, month, year}) => {
+  const response = await HttpService.get(apiEndpoints.generatePayslip(companyId, employeeId, month, year));
+  return response;
+}

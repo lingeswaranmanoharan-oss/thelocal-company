@@ -1,4 +1,18 @@
 .generate-payslip {
+  &-dropdowns {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-bottom: 0px;
+  }
+
+  &-dropdown-item {
+    min-width: 0;
+    width: 200px;
+    max-width: 200px;
+  }
+
   &-paper {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   }
@@ -70,6 +84,10 @@
     .generate-payslip {
       padding: 0;
       max-width: none;
+    }
+
+    .generate-payslip-no-print {
+      display: none !important;
     }
 
     .generate-payslip-paper {

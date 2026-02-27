@@ -149,7 +149,7 @@ export const router = createBrowserRouter([
         element: <PaySlip />,
       },
       {
-        path: 'generate-payslip',
+        path: 'generate-payslip/:employeeId',
         element: <GeneratePayslipPage />,
       },
        {

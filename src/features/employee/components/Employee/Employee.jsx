@@ -12,7 +12,7 @@ import { TableComponent, TableRow } from '../../../../components/Table/Table';
 import { Button, EditIconButton, ViewIconButton } from '../../../../components/Button/Button';
 import { Icon } from '@iconify/react';
 import { IconButton } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import useRouteInformation from '../../../../hooks/useRouteInformation';
 import toaster from '../../../../services/toasterService';
 import Popup from '../../../../components/Popup/Popup';
@@ -117,6 +117,7 @@ const EachEmployeeRow = ({ each, pathname, names, getEmployees }) => {
   const [confirmPopup, setConfirmPopup] = useState(false);
   const [salaryPopup, setSalaryPopup] = useState(false);
   const [salaryInitialData, setSalaryInitialData] = useState(null);
+  const navigate = useNavigate()
 
   const handleOpenAddSalary = async () => {
     let data = null;
@@ -132,6 +133,10 @@ const EachEmployeeRow = ({ each, pathname, names, getEmployees }) => {
     setSalaryPopup(true);
   };
 
+  const handleOpenGeneratePayslip = (employeeId) => {
+    navigate(`/payroll/generate-payslip/${employeeId}`)
+  }
+
   const handleCloseSalaryPopup = () => {
     setSalaryPopup(false);
     setSalaryInitialData(null);
@@ -143,23 +148,23 @@ const EachEmployeeRow = ({ each, pathname, names, getEmployees }) => {
         elements={[
           each.id,
           pathname.includes('approved') &&
-            (each.employeeId ? (
-              each.employeeId
-            ) : (
-              <p
-                style={{ margin: 0, color: 'orange', fontWeight: 'bold', cursor: 'pointer' }}
-                onClick={() => setConfirmPopup(true)}
-              >
-                Pending
-              </p>
-            )),
+          (each.employeeId ? (
+            each.employeeId
+          ) : (
+            <p
+              style={{ margin: 0, color: 'orange', fontWeight: 'bold', cursor: 'pointer' }}
+              onClick={() => setConfirmPopup(true)}
+            >
+              Pending
+            </p>
+          )),
           each.firstName + ' ' + each.lastName,
           each.personalEmail,
           each.contactNumber,
           !pathname.includes('pending') && (
             <div className="w-full flex justify-center gap-1">
               <ViewIconButton
-                requestedPath={`/employees/${names[2]}/${ pathname.includes('onboarded') ? 'viewEmployeeDetailsV2' : 'viewEmployeeDetails'}/${each.id}`}
+                requestedPath={`/employees/${names[2]}/${pathname.includes('onboarded') ? 'viewEmployeeDetailsV2' : 'viewEmployeeDetails'}/${each.id}`}
               />
               {pathname.includes('onboarded') && (
                 <IconButton
@@ -176,6 +181,17 @@ const EachEmployeeRow = ({ each, pathname, names, getEmployees }) => {
           pathname.includes('pending') && (
             <EditIconButton requestedPath={`${pathname}/${each.id}`} />
           ),
+          pathname.includes('onboarded') && (
+          <Button
+            type="button"
+            variant="primary"
+            size="sm"
+            className="inline-flex items-center gap-2"
+            onClick={() => handleOpenGeneratePayslip(each.id)}
+          >
+            Generate
+          </Button>
+          )
         ]}
         key={each.id}
       />
@@ -264,6 +280,7 @@ const Employee = () => {
           'Email',
           'Mobile Number',
           'ACT',
+          pathname.includes('onboarded') && 'Generate Payslip'
         ]}
         colSpan={!pathname.includes('pending') ? 5 : 4}
         totalPages={apiState?.data?.data?.totalPages}

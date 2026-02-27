@@ -8,7 +8,7 @@ export const Breadcrumb = () => {
   if (!breadcrumbs?.length) return null;
 
   return (
-    <nav aria-label="Breadcrumb" className="mb-4">
+    <nav aria-label="Breadcrumb" className="print-hide mb-4">
       <ol className="flex items-center text-sm text-gray-500">
         {breadcrumbs.map((item, index) => {
           const isLast = index === breadcrumbs.length - 1;

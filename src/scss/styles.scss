@@ -28,6 +28,16 @@
   }
 }
 
+@media print {
+  .print-hide {
+    display: none !important;
+  }
+
+  main {
+    padding: 0 !important;
+  }
+}
+
 
 // * {
 //   margin: 0;

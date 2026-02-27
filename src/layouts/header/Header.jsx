@@ -41,7 +41,7 @@ const Header = ({ onMobileMenuToggle }) => {
 
   return (
     <header
-      className="sticky top-0 z-30 bg-white border-b"
+      className="print-hide sticky top-0 z-30 bg-white border-b"
       style={{ borderColor: 'var(--border-light)' }}
     >
       <div className="flex items-center justify-between px-4 lg:px-6 py-3">

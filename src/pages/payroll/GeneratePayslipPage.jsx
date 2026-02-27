@@ -1,9 +1,11 @@
+import { useParams } from "react-router-dom";
 import { Breadcrumb } from "../../components/Breadcrumb/Breadcrumb"
 import GeneratePayslip from "../../features/payroll/components/generate-payslip/GeneratePayslip"
 import useBreadcrumbs from "../../hooks/useBreadCrumbs";
 import { icons } from "../../Utils/constants";
 
 const GeneratePayslipPage = () => {
+    const { employeeId } = useParams();
 
     useBreadcrumbs([
         {
@@ -22,7 +24,7 @@ const GeneratePayslipPage = () => {
     return (
         <div>
             <Breadcrumb />
-            <GeneratePayslip />
+            <GeneratePayslip employeeId={employeeId} />
         </div>
     )
 }

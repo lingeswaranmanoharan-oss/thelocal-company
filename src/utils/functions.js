@@ -110,6 +110,16 @@ const monthStringToDate = (mmYyyy) => {
   return `${year}-${month}-01`;
 };
 
+const formatAmountToFixed = (val) => {
+  const num = Number(val);
+  return val == null ? '' : num.toFixed(2);
+};
+
+const formatLabelWithSpaces = (string) => {
+  if (!string) return '';
+  return string.replace(/[_-]+/g, ' ').trim();
+};
+
 export {
   apiReducer,
   initialState,
@@ -121,4 +131,6 @@ export {
   apiStatusConditions,
   getDateToDDMMYYYYformat,
   monthStringToDate,
+  formatAmountToFixed,
+  formatLabelWithSpaces,
 };

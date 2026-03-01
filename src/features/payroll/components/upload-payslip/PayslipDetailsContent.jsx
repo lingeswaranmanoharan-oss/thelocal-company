@@ -1,7 +1,9 @@
+import { formatAmountToFixed, formatLabelWithSpaces } from '../../../../utils/functions';
+
 const PayslipDetailsContent = ({ payslip }) => {
   if (!payslip) return null;
 
-  const components = payslip.components;
+  const components = payslip.components ?? [];
 
   return (
     <div className="overflow-x-auto border border-gray-200 rounded-lg">
@@ -24,14 +26,14 @@ const PayslipDetailsContent = ({ payslip }) => {
           ) : (
             components.map((eachComponent, idx) => (
               <tr key={eachComponent.componentName + idx} className="upload-payslip-tr">
-                <td className="upload-payslip-td">{eachComponent.componentName ?? '—'}</td>
+                <td className="upload-payslip-td">{formatLabelWithSpaces(eachComponent.componentName)}</td>
                 <td className="upload-payslip-td text-center">
                   <span className={`upload-payslip-status ${(eachComponent.componentType || '').toUpperCase() === 'EARNING' ? 'upload-payslip-status-success' : 'upload-payslip-status-failed'}`}>
                     {eachComponent.componentType ?? '—'}
                   </span>
                 </td>
-                <td className="upload-payslip-td text-right">{eachComponent.masterAmount}</td>
-                <td className="upload-payslip-td text-right">{eachComponent.actualAmount}</td>
+                <td className="upload-payslip-td text-right">{formatAmountToFixed(eachComponent?.masterAmount)}</td>
+                <td className="upload-payslip-td text-right">{formatAmountToFixed(eachComponent?.actualAmount)}</td>
               </tr>
             ))
           )}

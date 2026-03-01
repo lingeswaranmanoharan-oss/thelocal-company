@@ -69,6 +69,7 @@ const UploadPayslip = () => {
     const [calculatingPayslipId, setCalculatingPayslipId] = useState(null);
     const [payslipDetailsPopup, setPayslipDetailsPopup] = useState(null);
     const [isFinalizing, setIsFinalizing] = useState(false);
+    const [showUploadResultPopup, setShowUploadResultPopup] = useState(false);
 
     const fetchPayslipList = async () => {
         const companyId = getCompanyId();
@@ -155,6 +156,8 @@ const UploadPayslip = () => {
             if (data?.success) {
                 toaster.success(data.message);
                 setUploadResult(data);
+                const hasFailures = (data?.data?.failureCount ?? 0) > 0;
+                setShowUploadResultPopup(hasFailures > 0);
                 setSelectedFile(null);
                 if (fileInputRef.current) fileInputRef.current.value = '';
                 fetchPayslipList();
@@ -242,13 +245,18 @@ const UploadPayslip = () => {
     const handleMonthSelect = (value) => {
         setMonth(value);
         validateField('month', value);
+        setUploadResult();
     };
 
     const handleYearSelect = (value) => {
         setYear(value);
         validateField('year', value);
+        setUploadResult();
     };
 
+    const uploadFailedResults = (uploadResult?.data?.results || []).filter(
+        (row) => (row.status || '').toLowerCase() === 'failed'
+    );
 
     return (
         <>
@@ -358,13 +366,7 @@ const UploadPayslip = () => {
                         ) : (
                             <>
                                 <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
-                                    {uploadResult?.data ? (
-                                        <div className="upload-payslip-summary flex flex-wrap items-center gap-4 text-sm">
-                                            <span className="upload-payslip-status upload-payslip-status-total">Total records: {uploadResult.data.totalRecords ?? 0}</span>
-                                            <span className="upload-payslip-status upload-payslip-status-success">Success: {uploadResult.data.successCount ?? 0}</span>
-                                            <span className="upload-payslip-status upload-payslip-status-failed">Failed: {uploadResult.data.failureCount ?? 0}</span>
-                                        </div>
-                                    ) : null}
+                                   
                                     <div className="flex flex-wrap items-center gap-3 ml-auto">
                                         <Button
                                             type="button"
@@ -397,36 +399,6 @@ const UploadPayslip = () => {
                                     accept=".xlsx"
                                     onChange={handleFileChange}
                                 />
-                                {uploadResult?.data && (
-                                    <div className="upload-payslip-results mb-6">
-                                        <div className="overflow-x-auto border border-gray-200 rounded-lg">
-                                            <table className="upload-payslip-table min-w-full divide-y divide-gray-200">
-                                                <thead className="bg-gray-50">
-                                                    <tr>
-                                                        <th className="upload-payslip-th">Employee ID</th>
-                                                        <th className="upload-payslip-th">Employee Name</th>
-                                                        <th className="upload-payslip-th">Status</th>
-                                                        <th className="upload-payslip-th">Message</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody className="bg-white divide-y divide-gray-200">
-                                                    {(uploadResult.data.results || []).map((row, idx) => (
-                                                        <tr key={row.employeeId || idx} className="upload-payslip-tr">
-                                                            <td className="upload-payslip-td">{row.employeeId ?? '—'}</td>
-                                                            <td className="upload-payslip-td">{row.employeeName ?? '—'}</td>
-                                                            <td className="upload-payslip-td">
-                                                                <span className={`upload-payslip-status upload-payslip-status-${(row.status || '').toLowerCase()}`}>
-                                                                    {row.status ?? '—'}
-                                                                </span>
-                                                            </td>
-                                                            <td className="upload-payslip-td upload-payslip-td-message">{row.message ?? '—'}</td>
-                                                        </tr>
-                                                    ))}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                )}
                             </>
                         )}
 
@@ -511,6 +483,50 @@ const UploadPayslip = () => {
                                     </Button>
                                 </div>
                             </>
+                        )}
+
+                        {showUploadResultPopup && uploadResult?.data && (
+                            <Popup
+                                open={showUploadResultPopup}
+                                onClose={() => setShowUploadResultPopup(false)}
+                                header="Failed Items"
+                                maxWidth="md"
+                                fullWidth
+                            >
+                                <div className="space-y-4">
+                                    <div className="upload-payslip-summary flex justify-end flex-wrap items-center gap-4 text-sm">
+                                        <span className="upload-payslip-status upload-payslip-status-total">Total records: {uploadResult.data.totalRecords ?? 0}</span>
+                                        <span className="upload-payslip-status upload-payslip-status-success">Success: {uploadResult.data.successCount ?? 0}</span>
+                                        <span className="upload-payslip-status upload-payslip-status-failed">Failed: {uploadResult.data.failureCount ?? 0}</span>
+                                    </div>
+                                    <div className="overflow-x-auto border border-gray-200 rounded-lg">
+                                        <table className="upload-payslip-table min-w-full divide-y divide-gray-200">
+                                            <thead className="bg-gray-50">
+                                                <tr>
+                                                    <th className="upload-payslip-th">Employee ID</th>
+                                                    <th className="upload-payslip-th">Employee Name</th>
+                                                    <th className="upload-payslip-th">Status</th>
+                                                    <th className="upload-payslip-th">Message</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="bg-white divide-y divide-gray-200">
+                                                {uploadFailedResults.map((row, idx) => (
+                                                    <tr key={row.employeeId || idx} className="upload-payslip-tr">
+                                                        <td className="upload-payslip-td">{row.employeeId ?? '—'}</td>
+                                                        <td className="upload-payslip-td">{row.employeeName ?? '—'}</td>
+                                                        <td className="upload-payslip-td">
+                                                            <span className="upload-payslip-status upload-payslip-status-failed">
+                                                                {row.status ?? '—'}
+                                                            </span>
+                                                        </td>
+                                                        <td className="upload-payslip-td upload-payslip-td-message">{row.message ?? '—'}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </Popup>
                         )}
 
                         {payslipDetailsPopup && (

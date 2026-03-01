@@ -3,8 +3,7 @@ import HttpService from '../../../services/httpService';
 
 export const getPayslipTemplate = async ({ companyId, month, year }) => {
   const response = await HttpService.get(apiEndpoints.getPayslipTemplate(), {
-    params: { companyId, month, year },
-    responseType: 'blob',
+    params: { companyId, month, year }
   });
   return response;
 };

@@ -7,3 +7,4 @@ export { ProfileImageUpload } from './ProfileImageUpload/ProfileImageUpload';
 export { Breadcrumb } from './Breadcrumb/Breadcrumb';
 export { Popup } from './Popup/Popup';
 export { DateInput } from './DateInput/DateInput';
+export { ActionsMenu } from './ActionsMenu/ActionsMenu';

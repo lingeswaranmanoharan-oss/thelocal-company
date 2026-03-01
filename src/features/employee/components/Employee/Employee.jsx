@@ -16,6 +16,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import useRouteInformation from '../../../../hooks/useRouteInformation';
 import toaster from '../../../../services/toasterService';
 import Popup from '../../../../components/Popup/Popup';
+import { ActionsMenu } from '../../../../components/ActionsMenu/ActionsMenu';
 import { generateEmpDetails, getEmployeeSalary } from '../../services/services';
 import AddSalaryPopup from './AddSalaryPopup';
 import { Input } from '../../../../components/Input/Input';
@@ -117,7 +118,9 @@ const EachEmployeeRow = ({ each, pathname, names, getEmployees }) => {
   const [confirmPopup, setConfirmPopup] = useState(false);
   const [salaryPopup, setSalaryPopup] = useState(false);
   const [salaryInitialData, setSalaryInitialData] = useState(null);
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const isOnboarded = pathname.includes('onboarded');
+  const viewPath = `/employees/${names[2]}/${isOnboarded ? 'viewEmployeeDetailsV2' : 'viewEmployeeDetails'}/${each.id}`;
 
   const handleOpenAddSalary = async () => {
     let data = null;
@@ -142,6 +145,12 @@ const EachEmployeeRow = ({ each, pathname, names, getEmployees }) => {
     setSalaryInitialData(null);
   };
 
+  const onboardedMenuItems = [
+    { label: 'View', icon: 'mdi:eye-outline', onClick: () => navigate(viewPath) },
+    { label: 'Add Salary', icon: 'mdi:cash-plus', onClick: handleOpenAddSalary },
+    { label: 'Generate Payslip', icon: 'mdi:file-document-outline', onClick: () => handleOpenGeneratePayslip(each.id) },
+  ];
+
   return (
     <>
       <TableRow
@@ -163,34 +172,19 @@ const EachEmployeeRow = ({ each, pathname, names, getEmployees }) => {
           each.contactNumber,
           !pathname.includes('pending') && (
             <div className="w-full flex justify-center gap-1">
-              <ViewIconButton
-                requestedPath={`/employees/${names[2]}/${pathname.includes('onboarded') ? 'viewEmployeeDetailsV2' : 'viewEmployeeDetails'}/${each.id}`}
-              />
-              {pathname.includes('onboarded') && (
-                <IconButton
-                  onClick={handleOpenAddSalary}
-                  title="Add Salary"
-                  aria-label="Add Salary"
-                  size="small"
-                >
-                  <Icon icon="mdi:cash-plus" color="#f26522" height={22} />
-                </IconButton>
+              {isOnboarded ? (
+                <ActionsMenu
+                  id={`employee-actions-${each.id}`}
+                  items={onboardedMenuItems}
+                  ariaLabel="Employee actions"
+                />
+              ) : (
+                <ViewIconButton requestedPath={viewPath} />
               )}
             </div>
           ),
           pathname.includes('pending') && (
             <EditIconButton requestedPath={`${pathname}/${each.id}`} />
-          ),
-          pathname.includes('onboarded') && (
-          <Button
-            type="button"
-            variant="primary"
-            size="sm"
-            className="inline-flex items-center gap-2"
-            onClick={() => handleOpenGeneratePayslip(each.id)}
-          >
-            Generate
-          </Button>
           )
         ]}
         key={each.id}
@@ -279,8 +273,7 @@ const Employee = () => {
           'Employee Name',
           'Email',
           'Mobile Number',
-          'ACT',
-          pathname.includes('onboarded') && 'Generate Payslip'
+          'ACT'
         ]}
         colSpan={!pathname.includes('pending') ? 5 : 4}
         totalPages={apiState?.data?.data?.totalPages}

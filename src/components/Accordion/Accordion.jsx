@@ -12,13 +12,14 @@ export function Accordion({
   defaultExpanded = false,
   expanded,
   onChange,
+  startIcon,
   ...rest
 }) {
   const isControlled = expanded !== undefined;
 
   return (
     <MuiAccordion
-      className="accordion-reusable"
+      className="accordion-reusable border"
       defaultExpanded={!isControlled && defaultExpanded}
       expanded={isControlled ? expanded : undefined}
       onChange={isControlled ? onChange : undefined}
@@ -30,7 +31,10 @@ export function Accordion({
         expandIcon={<Icon icon="mdi:chevron-down" className="accordion-chevron" />}
         className="accordion-summary"
       >
-        <span className="accordion-title">{title}</span>
+        <span className="accordion-title">
+          {startIcon && <Icon icon={startIcon} />}
+          {title}
+        </span>
       </MuiAccordionSummary>
       <MuiAccordionDetails className="accordion-details">{children}</MuiAccordionDetails>
     </MuiAccordion>
@@ -38,3 +42,4 @@ export function Accordion({
 }
 
 export default Accordion;
+

@@ -89,8 +89,9 @@ const SideNav = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
       )}
 
       <aside
-        className={`print-hide fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white border-r transform transition-transform duration-300 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-          }`}
+        className={`print-hide fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white border-r transform transition-transform duration-300 ${
+          isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        }`}
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
@@ -100,10 +101,11 @@ const SideNav = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
                 src={
                   apiStatusConditions.success(proflie)
                     ? proflie?.data?.data?.logoUrl
-                    : `https://placehold.co/600x400?text=${apiStatusConditions.failure(proflie)
-                      ? 'failed to fetch the logo'
-                      : 'fetching logo...'
-                    }`
+                    : `https://placehold.co/600x400?text=${
+                        apiStatusConditions.failure(proflie)
+                          ? 'failed to fetch the logo'
+                          : 'fetching logo...'
+                      }`
                 }
                 alt="logo"
                 className="h-14 w-full rounded-full object-contain"
@@ -140,10 +142,11 @@ const SideNav = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
                       <button
                         key={child.path}
                         onClick={() => handleNavigate(child.path)}
-                        className={`w-full text-left px-3 py-2 text-sm rounded-lg ${pathname.includes(child.path)
-                          ? 'bg-orange-600 text-white'
-                          : 'text-gray-600'
-                          }`}
+                        className={`w-full text-left px-3 py-2 text-sm rounded-lg ${
+                          pathname.includes(child.path)
+                            ? 'bg-orange-600 text-white'
+                            : 'text-gray-600'
+                        }`}
                       >
                         {child.label}
                       </button>

@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Breadcrumb } from '../../components/Breadcrumb/Breadcrumb';
 import Employee from '../../features/employee/components/employee/employee';
-import { icons } from '../../Utils/constants';
+import { icons } from '../../utils/constants';
 import useBreadcrumbs from '../../hooks/useBreadCrumbs';
 import useRouteInformation from '../../hooks/useRouteInformation';
 import { combineSlices } from '@reduxjs/toolkit';

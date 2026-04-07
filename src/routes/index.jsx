@@ -23,6 +23,8 @@ import GeneratePayslipPage from '../pages/payroll/GeneratePayslipPage';
 import UploadPayslipPage from '../pages/payroll/UploadPayslipPage';
 import BusinessDaysPage from '../pages/holidays/businessDays/BusinessDaysPage';
 import ViewEmployeeDetails from '../pages/Employee/ViewEmployeeDetails/ViewEmployeeDetails';
+import EmployeeDetailsNewPage from '../pages/Employee/ViewEmployeeDetails/EmployeeDetailsNewPage';
+
 
 export const router = createBrowserRouter([
   {
@@ -122,9 +124,13 @@ export const router = createBrowserRouter([
         path: '/employees/requests',
         element: <EmployeePage />,
       },
+      // {
+      //   path: '/employees/:status/viewEmployeeDetailsV2/:companyId',
+      //   element: <ViewEmployeeDetailsV2 />,
+      // },
       {
         path: '/employees/:status/viewEmployeeDetailsV2/:companyId',
-        element: <ViewEmployeeDetailsV2 />,
+        element: <EmployeeDetailsNewPage />,
       },
       {
         path: '/employees/:status/viewEmployeeDetails/:companyId',

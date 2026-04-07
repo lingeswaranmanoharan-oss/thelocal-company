@@ -28,18 +28,18 @@ export const COMPANY_LOGO_COLORS = [
 ];
 
 export const MONTHS = [
-    { value: 1, label: 'January' },
-    { value: 2, label: 'February' },
-    { value: 3, label: 'March' },
-    { value: 4, label: 'April' },
-    { value: 5, label: 'May' },
-    { value: 6, label: 'June' },
-    { value: 7, label: 'July' },
-    { value: 8, label: 'August' },
-    { value: 9, label: 'September' },
-    { value: 10, label: 'October' },
-    { value: 11, label: 'November' },
-    { value: 12, label: 'December' },
+  { value: 1, label: 'January' },
+  { value: 2, label: 'February' },
+  { value: 3, label: 'March' },
+  { value: 4, label: 'April' },
+  { value: 5, label: 'May' },
+  { value: 6, label: 'June' },
+  { value: 7, label: 'July' },
+  { value: 8, label: 'August' },
+  { value: 9, label: 'September' },
+  { value: 10, label: 'October' },
+  { value: 11, label: 'November' },
+  { value: 12, label: 'December' },
 ];
 export const icons = {
   employees: 'streamline-ultimate:human-resources-search-employees-bold',
@@ -48,6 +48,7 @@ export const icons = {
   uploadExcel: 'material-symbols:upload-rounded',
   downloadExcel: 'material-symbols:download-rounded',
   payroll: 'streamline-freehand:cash-payment-bill',
+  profile: 'boxicons:user-filled',
 
   checkCircle: 'mdi:check-circle',
   cardAccount: 'mdi:card-account-details-outline',
@@ -68,7 +69,9 @@ export const icons = {
   marital: 'mdi:ring',
   briefcase: 'mdi:briefcase-outline',
   children: 'mdi:baby-bottle-outline',
-  holidays:"flowbite:calendar-week-solid"
+  holidays: 'flowbite:calendar-week-solid',
+
+   bank: 'mingcute:bank-line',
 };
 
 export const ITEMS_PER_PAGE_OPTIONS = [10, 25, 50, 100];

@@ -137,8 +137,8 @@ const EachEmployeeRow = ({ each, pathname, names, getEmployees }) => {
   };
 
   const handleOpenGeneratePayslip = (employeeId) => {
-    navigate(`/payroll/generate-payslip/${employeeId}`)
-  }
+    navigate(`/payroll/generate-payslip/${employeeId}`);
+  };
 
   const handleCloseSalaryPopup = () => {
     setSalaryPopup(false);
@@ -157,16 +157,16 @@ const EachEmployeeRow = ({ each, pathname, names, getEmployees }) => {
         elements={[
           each.id,
           pathname.includes('approved') &&
-          (each.employeeId ? (
-            each.employeeId
-          ) : (
-            <p
-              style={{ margin: 0, color: 'orange', fontWeight: 'bold', cursor: 'pointer' }}
-              onClick={() => setConfirmPopup(true)}
-            >
-              Pending
-            </p>
-          )),
+            (each.employeeId ? (
+              each.employeeId
+            ) : (
+              <p
+                style={{ margin: 0, color: 'orange', fontWeight: 'bold', cursor: 'pointer' }}
+                onClick={() => setConfirmPopup(true)}
+              >
+                Pending
+              </p>
+            )),
           each.firstName + ' ' + each.lastName,
           each.personalEmail,
           each.contactNumber,
@@ -185,7 +185,18 @@ const EachEmployeeRow = ({ each, pathname, names, getEmployees }) => {
           ),
           pathname.includes('pending') && (
             <EditIconButton requestedPath={`${pathname}/${each.id}`} />
-          )
+          ),
+          pathname.includes('onboarded') && (
+            <Button
+              type="button"
+              variant="primary"
+              size="sm"
+              className="inline-flex items-center gap-2"
+              onClick={() => handleOpenGeneratePayslip(each.id)}
+            >
+              Generate
+            </Button>
+          ),
         ]}
         key={each.id}
       />
@@ -273,7 +284,8 @@ const Employee = () => {
           'Employee Name',
           'Email',
           'Mobile Number',
-          'ACT'
+          'ACT',
+          pathname.includes('onboarded') && 'Generate Payslip',
         ]}
         colSpan={!pathname.includes('pending') ? 5 : 4}
         totalPages={apiState?.data?.data?.totalPages}

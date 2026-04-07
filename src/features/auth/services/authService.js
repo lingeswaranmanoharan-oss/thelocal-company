@@ -11,7 +11,7 @@ export const getNewToken = async () => {
 };
 
 export const signOut = async () => {
-  const response = await HttpService.post('/logout', {});
+  const response = await HttpService.post('/auth/logout', {});
   return response.data;
 };
 

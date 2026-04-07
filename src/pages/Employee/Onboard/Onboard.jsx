@@ -2,7 +2,7 @@ import React from 'react';
 import EmployeeOnboardForm from '../../../features/employee/components/onboard/onboard';
 import { Breadcrumb } from '../../../components/Breadcrumb/Breadcrumb';
 import useBreadcrumbs from '../../../hooks/useBreadCrumbs';
-import { icons } from '../../../Utils/constants';
+import { icons } from '../../../utils/constants';
 
 const EmployeeOnboard = () => {
   useBreadcrumbs([

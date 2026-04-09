@@ -1,162 +1,173 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import dayjs from 'dayjs';
 import * as yup from 'yup';
 import { Input } from '../../../../components/Input/Input';
 import { Button } from '../../../../components/Button/Button';
+import DateInput from '../../../../components/DateInput/DateInput';
 import { addEmployeeSalary } from '../../services/services';
 import toaster from '../../../../services/toasterService';
 
 const basciMaxDigit = 999999999;
-const maxDigit = 99999999;
 
-const salaryBreakupSchema = yup.object().shape({
-  basicMonthly: yup
+const salaryFormSchema = yup.object().shape({
+  salaryPerMonth: yup
     .number()
     .nullable()
-    .required('Basic is required')
-    .min(0, 'Basic must be 0 or greater')
-    .max(basciMaxDigit, 'Basic must not exceed 9 digits'),
-  hraMonthly: yup
-    .number()
-    .transform((value, originalValue) => {
-      // handle empty input OR invalid number
-      return isNaN(value) ? null : value;
-    })
-    .nullable()
-    .required('House Rent Allowance is required')
-    .min(0, 'House Rent Allowance must be 0 or greater')
-    .max(100, 'House Rent Allowance must not exceed 100'),
-  conveyanceMonthly: yup
-    .number()
-    .nullable()
-    .required('Conveyance Allowance is required')
-    .min(0, 'Conveyance Allowance must be 0 or greater')
-    .max(maxDigit, 'Conveyance Allowance must not exceed 8 digits'),
-  medicalMonthly: yup
-    .number()
-    .nullable()
-    .required('Medical Allowance is required')
-    .min(0, 'Medical Allowance must be 0 or greater')
-    .max(maxDigit, 'Medical Allowance must not exceed 8 digits'),
-  adhocMonthly: yup
-    .number()
-    .nullable()
-    .required('Adhoc Allowance is required')
-    .min(0, 'Adhoc Allowance must be 0 or greater')
-    .max(maxDigit, 'Adhoc Allowance must not exceed 8 digits'),
-  foodMonthly: yup
-    .number()
-    .nullable()
-    .required('Food Allowance is required')
-    .min(0, 'Food Allowance must be 0 or greater')
-    .max(maxDigit, 'Food Allowance must not exceed 8 digits'),
-  travelMonthly: yup
-    .number()
-    .nullable()
-    .required('Travel Allowance is required')
-    .min(0, 'Travel Allowance must be 0 or greater')
-    .max(maxDigit, 'Travel Allowance must not exceed 8 digits'),
-  ltaMonthly: yup
-    .number()
-    .nullable()
-    .required('LTA (Leave Travel Allowance) is required')
-    .min(0, 'LTA (Leave Travel Allowance) must be 0 or greater')
-    .max(maxDigit, 'LTA (Leave Travel Allowance) must not exceed 8 digits'),
-  bonusMonthly: yup
-    .number()
-    .nullable()
-    .required('Bonus is required')
-    .min(0, 'Bonus must be 0 or greater')
-    .max(maxDigit, 'Bonus must not exceed 8 digits'),
-  employerPfMonthly: yup
-    .number()
-    .transform((value, originalValue) => {
-      return isNaN(value) ? null : value;
-    })
-    .nullable()
-    .required('Employers cont. to Provident Fund (%) is required')
-    .min(0, 'Employers cont. to Provident Fund must be 0 or greater')
-    .max(100, 'Employers cont. to Provident Fund must not exceed 100'),
-  employeePfMonthly: yup
-    .number()
-    .transform((value, originalValue) => {
-      return isNaN(value) ? null : value;
-    })
-    .nullable()
-    .required('Employees cont. to Provident Fund (%) is required')
-    .min(0, 'Employees cont. to Provident Fund must be 0 or greater')
-    .max(100, 'Employees cont. to Provident Fund must not exceed 100'),
-  employerEsicMonthly: yup
-    .number()
-    .nullable()
-    .required('Employers cont. to ESIC is required')
-    .min(0, 'Employers cont. to ESIC must be 0 or greater')
-    .max(maxDigit, 'Employers cont. to ESIC must not exceed 8 digits'),
-  employeeEsicMonthly: yup
-    .number()
-    .nullable()
-    .required('Employees cont. to ESIC is required')
-    .min(0, 'Employees cont. to ESIC must be 0 or greater')
-    .max(maxDigit, 'Employees cont. to ESIC must not exceed 8 digits'),
-  professionalTaxMonthly: yup
-    .number()
-    .nullable()
-    .required('Profession Tax is required')
-    .min(0, 'Profession Tax must be 0 or greater')
-    .max(maxDigit, 'Profession Tax must not exceed 8 digits'),
+    .required('Salary per month is required')
+    .min(0, 'Salary must be 0 or greater')
+    .max(basciMaxDigit, 'Salary must not exceed 9 digits'),
+  effectiveStartDate: yup.string().required('Effective start date is required'),
+  effectiveEndDate: yup
+    .string()
+    .required('Effective end date is required')
+    .test(
+      'end-after-start',
+      'Effective end date must be on or after start date',
+      (value, context) => {
+        const { effectiveStartDate } = context.parent;
+        if (!value || !effectiveStartDate) return true;
+        return value >= effectiveStartDate;
+      },
+    ),
 });
 
-const HRA_PCT_FIELD = { key: 'houseRentAllowancePct', label: 'House Rent Allowance' };
+const foodAllowance = 2200;
+const conveyanceAllowance = 800;
 
-const MANUAL_AMOUNT_FIELDS = [
-  { key: 'conveyanceMonthly', label: 'Conveyance Allowance' },
-  { key: 'medicalMonthly', label: 'Medical Allowance' },
-  { key: 'adhocMonthly', label: 'Adhoc Allowance' },
-  { key: 'foodMonthly', label: 'Food Allowance' },
-  { key: 'travelMonthly', label: 'Travel Allowance' },
-  { key: 'ltaMonthly', label: 'LTA (Leave Travel Allowance)' },
-  { key: 'bonusMonthly', label: 'Bonus' },
-];
+const roundRupee = (amount) => Math.round(Number(amount));
 
-const defaultFormData = {
-  basicMonthly: null,
-  hraMonthly: null,
-  conveyanceMonthly: null,
-  medicalMonthly: null,
-  adhocMonthly: null,
-  foodMonthly: null,
-  travelMonthly: null,
-  ltaMonthly: null,
-  bonusMonthly: null,
-  employerPfMonthly: null,
-  employeePfMonthly: null,
-  employerEsicMonthly: null,
-  employeeEsicMonthly: null,
-  professionalTaxMonthly: null,
+const esiGrossCeiling = 21000;
+const pfBasicCap = 15000;
+const professionalTaxHigh = 200;
+const professionalTaxMid = 150;
+
+const computeBreakup = (salaryPerMonth) => {
+  const salaryInput = Number(salaryPerMonth) || 0;
+  const grossPayable = salaryInput;
+
+  const basicBeforeRound = grossPayable * 0.5;
+  const hraBeforeRound = basicBeforeRound * 0.4;
+  const helperAllowance = 0;
+  const researchAllowance = 0;
+  const uniformAllowance = 0;
+  const childrenEducationAllowance = 0;
+  const foodMonthly = foodAllowance;
+  const conveyanceMonthly = conveyanceAllowance;
+  const pctOfGrossBeforeRound = grossPayable * 0.1;
+
+  const sumEarningsThroughPct =
+    basicBeforeRound +
+    hraBeforeRound +
+    helperAllowance +
+    researchAllowance +
+    uniformAllowance +
+    childrenEducationAllowance +
+    foodMonthly +
+    conveyanceMonthly +
+    pctOfGrossBeforeRound;
+  const specialAllowanceBeforeRound = grossPayable - sumEarningsThroughPct;
+  const grossSalaryForStatutes = sumEarningsThroughPct + specialAllowanceBeforeRound;
+
+  const employeePfBeforeRound =
+    basicBeforeRound > pfBasicCap ? pfBasicCap * 0.12 : basicBeforeRound * 0.12;
+  const employeeEsiBeforeRound =
+    grossSalaryForStatutes <= esiGrossCeiling ? grossSalaryForStatutes * 0.0075 : 0;
+  let professionalTaxBeforeRound = 0;
+  if (salaryInput < 20001) {
+    professionalTaxBeforeRound = salaryInput < 15000 ? 0 : professionalTaxMid;
+  } else {
+    professionalTaxBeforeRound = professionalTaxHigh;
+  }
+  const incomeTaxMonthly = 0;
+  const totalDeductionsBeforeRound =
+    employeePfBeforeRound + employeeEsiBeforeRound + professionalTaxBeforeRound + incomeTaxMonthly;
+  const netPayBeforeRound = grossSalaryForStatutes - totalDeductionsBeforeRound;
+
+  const employerPfBeforeRound = employeePfBeforeRound;
+  const employerEsiBeforeRound =
+    grossSalaryForStatutes <= esiGrossCeiling ? grossSalaryForStatutes * 0.0325 : 0;
+  const medicalInsuranceMonthly = 0;
+  const termInsuranceMonthly = 0;
+  const totalAdditionalBenefitsBeforeRound =
+    employerPfBeforeRound + employerEsiBeforeRound + medicalInsuranceMonthly + termInsuranceMonthly;
+  const costToCompanyBeforeRound = grossSalaryForStatutes + totalAdditionalBenefitsBeforeRound;
+
+  const basicMonthly = roundRupee(basicBeforeRound);
+  const hraMonthly = roundRupee(hraBeforeRound);
+  const pctOfGrossMonthly = roundRupee(pctOfGrossBeforeRound);
+  const specialAllowance = roundRupee(specialAllowanceBeforeRound);
+  const grossSalaryA = roundRupee(grossPayable);
+
+  const employeePfMonthly = roundRupee(employeePfBeforeRound);
+  const employeeEsicMonthly = roundRupee(employeeEsiBeforeRound);
+  const professionalTaxMonthly = roundRupee(professionalTaxBeforeRound);
+  const totalDeductionsB = roundRupee(totalDeductionsBeforeRound);
+  const netPayMonthly = roundRupee(netPayBeforeRound);
+
+  const employerPfMonthly = roundRupee(employerPfBeforeRound);
+  const employerEsicMonthly = roundRupee(employerEsiBeforeRound);
+  const totalAdditionalBenefitsC = roundRupee(totalAdditionalBenefitsBeforeRound);
+  const ctcMonthly = roundRupee(costToCompanyBeforeRound);
+
+  return {
+    basicMonthly,
+    hraMonthly,
+    helperAllowance,
+    researchAllowance,
+    uniformAllowance,
+    childrenEducationAllowance,
+    foodMonthly,
+    conveyanceMonthly,
+    pctOfGrossMonthly,
+    specialAllowance,
+    grossSalaryA,
+    employeePfMonthly,
+    employeeEsicMonthly,
+    professionalTaxMonthly,
+    incomeTaxMonthly,
+    totalDeductionsB,
+    netPayMonthly,
+    employerPfMonthly,
+    employerEsicMonthly,
+    medicalInsuranceMonthly,
+    termInsuranceMonthly,
+    totalAdditionalBenefitsC,
+    ctcMonthly,
+    conveyanceForApi: roundRupee(conveyanceMonthly + pctOfGrossBeforeRound),
+  };
 };
 
-const calculatePercentage = (amount, basic) => {
-  if (!amount || !basic) return null;
-  return Number(((amount / basic) * 100).toFixed(2));
-};
-
-const FormRow = ({ label, children, yearlyValue, className = '', error }) => (
+const FormRow = ({
+  label,
+  monthlyValue,
+  yearlyValue,
+  className = '',
+  error,
+  monthlyDisabled,
+  onMonthlyChange,
+}) => (
   <div className={className}>
     <div className="flex items-stretch gap-4 py-2 ">
       <div className="flex flex-1 items-center gap-4 min-w-0">
         <label className={'w-56 flex-shrink-0 text-sm font-medium text-gray-700'}>{label}</label>
         <div className="flex-1 flex items-center justify-end gap-2 flex-wrap min-w-0">
-          {children}
+          <Input
+            type="number"
+            min={0}
+            value={monthlyValue === '' || monthlyValue == null ? '' : monthlyValue}
+            disabled={monthlyDisabled}
+            onChange={onMonthlyChange}
+            className={`max-w-[140px] text-right ${monthlyDisabled ? 'bg-gray-50' : ''}`}
+          />
         </div>
       </div>
       <div className="w-36 flex-shrink-0 flex items-center justify-end">
-        {yearlyValue != null && (
-          <Input
-            type="number"
-            value={yearlyValue}
-            disabled
-            className="w-full bg-gray-50 text-right"
-          />
-        )}
+        <Input
+          type="number"
+          value={yearlyValue === '' || yearlyValue == null ? '' : yearlyValue}
+          disabled
+          className="w-full bg-gray-50 text-right"
+        />
       </div>
     </div>
     {error && (
@@ -168,26 +179,47 @@ const FormRow = ({ label, children, yearlyValue, className = '', error }) => (
     )}
   </div>
 );
+
+const defaultFormData = () => ({
+  salaryPerMonth: null,
+  effectiveStartDate: dayjs().format('YYYY-MM-DD'),
+  effectiveEndDate: dayjs().add(1, 'year').format('YYYY-MM-DD'),
+});
+
 const mapApiDataToFormData = (data) => {
-  if (!data) return defaultFormData;
-  const basic = data.basicMonthly ?? 0;
+  if (!data) return defaultFormData();
+
+  let salaryPerMonth = null;
+  const gross = data.grossMonthly;
+  if (gross != null && gross !== '') salaryPerMonth = gross;
+  else if (data.basicMonthly != null && data.basicMonthly !== '') {
+    salaryPerMonth = Math.round(data.basicMonthly / 0.5);
+  }
+
+  const start = data.effectiveStartDate
+    ? dayjs(data.effectiveStartDate).format('YYYY-MM-DD')
+    : dayjs().format('YYYY-MM-DD');
+  const end = data.effectiveEndDate
+    ? dayjs(data.effectiveEndDate).format('YYYY-MM-DD')
+    : dayjs().add(1, 'year').format('YYYY-MM-DD');
 
   return {
-    basicMonthly: data.basicMonthly ?? null,
-    hraMonthly: calculatePercentage(data.hraMonthly, basic),
-    conveyanceMonthly: data.conveyanceMonthly ?? null,
-    medicalMonthly: data.medicalMonthly ?? null,
-    adhocMonthly: data.adhocMonthly ?? null,
-    foodMonthly: data.foodMonthly ?? null,
-    travelMonthly: data.travelMonthly ?? null,
-    ltaMonthly: data.ltaMonthly ?? null,
-    bonusMonthly: data.bonusMonthly ?? null,
-    employerPfMonthly: calculatePercentage(data.employerPfMonthly, basic),
-    employeePfMonthly: calculatePercentage(data.employeePfMonthly, basic),
-    employerEsicMonthly: data.employerEsicMonthly ?? null,
-    employeeEsicMonthly: data.employeeEsicMonthly ?? null,
-    professionalTaxMonthly: data.professionalTaxMonthly ?? null,
+    salaryPerMonth,
+    effectiveStartDate: start,
+    effectiveEndDate: end,
   };
+};
+
+const yearly = (value) => {
+  if (value === '' || value == null) return '';
+  return roundRupee(Number(value) * 12);
+};
+
+const toAnnualAmount = (monthlyAmount) => {
+  if (monthlyAmount === '' || monthlyAmount == null) {
+    return 0;
+  }
+  return roundRupee(Number(monthlyAmount) * 12);
 };
 
 const AddSalaryPopup = ({
@@ -197,139 +229,72 @@ const AddSalaryPopup = ({
   viewMode = false,
   initialData = null,
 }) => {
-  const [formData, setFormData] = useState(defaultFormData);
+  const [formData, setFormData] = useState(() => defaultFormData());
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (initialData) {
       setFormData(mapApiDataToFormData(initialData));
+    } else {
+      setFormData(defaultFormData());
     }
   }, [initialData]);
 
-  const validateField = async (field, value) => {
+  const breakup = useMemo(() => computeBreakup(formData.salaryPerMonth), [formData.salaryPerMonth]);
+
+  const handleSalaryChange = async (e) => {
+    const raw = e.target.value;
+    const n = Number(raw);
+    const numValue = raw === '' || raw == null || Number.isNaN(n) ? null : n;
+    setFormData((prev) => ({ ...prev, salaryPerMonth: numValue }));
     try {
-      await salaryBreakupSchema.validateAt(field, { [field]: value });
-      setErrors((prev) => ({ ...prev, [field]: '' }));
+      await salaryFormSchema.validateAt('salaryPerMonth', { salaryPerMonth: numValue });
+      setErrors((prev) => ({ ...prev, salaryPerMonth: '' }));
     } catch (error) {
-      setErrors((prev) => ({ ...prev, [field]: error.message }));
+      setErrors((prev) => ({ ...prev, salaryPerMonth: error.message }));
     }
   };
 
-  const handleChange = async (field, value) => {
-    const numValue =
-      value === '' || value == null
-        ? null
-        : (() => {
-            const n = Number(value);
-            return Number.isNaN(n) ? null : n;
-          })();
-    const isPfPct = field === 'employerPfMonthly' || field === 'employeePfMonthly';
-    const isEsic = field === 'employerEsicMonthly' || field === 'employeeEsicMonthly';
-    setFormData((prev) => {
-      const next = { ...prev, [field]: numValue };
-      if (isPfPct) {
-        next.employerPfMonthly = numValue;
-        next.employeePfMonthly = numValue;
-      }
-      if (isEsic) {
-        next.employerEsicMonthly = numValue;
-        next.employeeEsicMonthly = numValue;
-      }
-      return next;
-    });
-    if (isPfPct) {
-      await validateField('employerPfMonthly', numValue);
-      await validateField('employeePfMonthly', numValue);
-    } else {
-      await validateField(field, numValue);
-    }
-  };
-
-  const handleNumberChange = (field, e) => {
-    handleChange(field, e.target.value);
-  };
-
-  const basic = formData.basicMonthly || 0;
-  const hraAmount = Math.round((basic * (formData.hraMonthly || 0)) / 100);
-  const employerPfAmount = Math.round((basic * (formData.employerPfMonthly || 0)) / 100);
-  const employeePfAmount = Math.round((basic * (formData.employeePfMonthly || 0)) / 100);
-
-  const allowanceTotal =
-    (formData.conveyanceMonthly || 0) +
-    (formData.medicalMonthly || 0) +
-    (formData.adhocMonthly || 0) +
-    (formData.foodMonthly || 0) +
-    (formData.travelMonthly || 0) +
-    (formData.ltaMonthly || 0) +
-    (formData.bonusMonthly || 0);
-  const grossSalary = basic + hraAmount + allowanceTotal;
-
-  const { employerEsicMonthly, employeeEsicMonthly, professionalTaxMonthly } = formData;
-  const ctc = grossSalary + employerPfAmount + (employerEsicMonthly || 0);
-  const netTakeHome =
-    grossSalary - employeePfAmount - (employeeEsicMonthly || 0) - (professionalTaxMonthly || 0);
-
-  const yearly = (value) => (value ?? 0) * 12;
-
-  const addAnnualFields = (monthlyData) => {
-    const payload = { ...monthlyData };
-
-    Object.entries(monthlyData).forEach(([key, value]) => {
-      if (key.endsWith('Monthly')) {
-        const annualKey = key.replace('Monthly', 'Annual');
-        payload[annualKey] = value == null ? null : yearly(value);
-      }
-    });
-
-    return payload;
-  };
-
-  const buildSalaryPayload = (formData, employeeId) => {
-    const basic = formData.basicMonthly ?? 0;
-
-    // 🔥 convert percentage → amount
-    const convertedData = {
-      ...formData,
-
-      hraMonthly: Math.round((basic * (formData.hraMonthly ?? 0)) / 100),
-
-      employerPfMonthly: Math.round((basic * (formData.employerPfMonthly ?? 0)) / 100),
-
-      employeePfMonthly: Math.round((basic * (formData.employeePfMonthly ?? 0)) / 100),
-    };
+  const buildSalaryPayload = () => {
+    const monthlySalary = formData.salaryPerMonth ?? 0;
+    const {
+      basicMonthly,
+      hraMonthly,
+      conveyanceForApi,
+      specialAllowance,
+      foodMonthly,
+      employerPfMonthly,
+      employeePfMonthly,
+      employerEsicMonthly,
+      employeeEsicMonthly,
+      professionalTaxMonthly,
+    } = computeBreakup(monthlySalary);
 
     return {
       employeeId,
-      ...addAnnualFields(convertedData),
+      basicAnnual: toAnnualAmount(basicMonthly),
+      hraAnnual: toAnnualAmount(hraMonthly),
+      conveyanceAnnual: toAnnualAmount(conveyanceForApi),
+      medicalAnnual: 0,
+      adhocAnnual: toAnnualAmount(specialAllowance),
+      foodAnnual: toAnnualAmount(foodMonthly),
+      travelAnnual: 0,
+      ltaAnnual: 0,
+      bonusAnnual: 0,
+      employerPfAnnual: toAnnualAmount(employerPfMonthly),
+      employerEsicAnnual: toAnnualAmount(employerEsicMonthly),
+      employeePfAnnual: toAnnualAmount(employeePfMonthly),
+      employeeEsicAnnual: toAnnualAmount(employeeEsicMonthly),
+      professionalTaxAnnual: toAnnualAmount(professionalTaxMonthly),
+      effectiveStartDate: formData.effectiveStartDate,
+      effectiveEndDate: formData.effectiveEndDate,
     };
   };
 
   const submitSalaryData = async () => {
     try {
-      // const payload = {
-      //   ...formData,
-      //   employeeId: employeeId,
-      //   basicMonthly: basic,
-      //   hraMonthly: hraAmount,
-      //   grossMonthly: grossSalary,
-      //   // conveyance: formData.conveyance ?? 0,
-      //   // medical: formData.medical ?? 0,
-      //   // adhoc: formData.adhoc ?? 0,
-      //   // food: formData.food ?? 0,
-      //   // travel: formData.travel ?? 0,
-      //   // lta: formData.lta ?? 0,
-      //   // bonus: formData.bonus ?? 0,
-      //   // gross: grossSalary,
-      //   // employerPf: employerPfAmount,
-      //   // employerEsic: employerEsic ?? 0,
-      //   // employeePf: employeePfAmount,
-      //   // employeeEsic: employeeEsic ?? 0,
-      //   // professionalTax: professionTax ?? 0,
-      // };
-
-      const payload = buildSalaryPayload(formData, employeeId);
-      console.log('Final payload is ', payload);
+      const payload = buildSalaryPayload();
       const response = await addEmployeeSalary(payload);
       if (response?.success) {
         toaster.success(response?.message);
@@ -354,7 +319,7 @@ const AddSalaryPopup = ({
     setErrors({});
     setIsLoading(true);
     try {
-      await salaryBreakupSchema.validate(formData, { abortEarly: false });
+      await salaryFormSchema.validate(formData, { abortEarly: false });
       await submitSalaryData();
     } catch (error) {
       if (error.inner) {
@@ -369,6 +334,9 @@ const AddSalaryPopup = ({
     }
   };
 
+  const readOnly = true;
+  const salaryMonthlyDisabled = viewMode;
+
   return (
     <div className="flex flex-col max-h-[70vh] pt-2">
       <form
@@ -376,6 +344,34 @@ const AddSalaryPopup = ({
         onSubmit={viewMode ? (e) => e.preventDefault() : handleSubmit}
       >
         <div className="flex-1 overflow-y-auto min-h-0 space-y-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-4 border-b border-gray-200">
+            <DateInput
+              label="Effective start date"
+              format="DD-MM-YYYY"
+              placeholder="Select start date"
+              value={formData.effectiveStartDate}
+              handleChange={(isoDate) => {
+                setFormData((prev) => ({ ...prev, effectiveStartDate: isoDate }));
+                setErrors((prev) => ({ ...prev, effectiveStartDate: '' }));
+              }}
+              error={errors.effectiveStartDate}
+              readOnly={viewMode}
+            />
+            <DateInput
+              label="Effective end date"
+              format="DD-MM-YYYY"
+              placeholder="Select end date"
+              value={formData.effectiveEndDate}
+              minDate={formData.effectiveStartDate}
+              handleChange={(isoDate) => {
+                setFormData((prev) => ({ ...prev, effectiveEndDate: isoDate }));
+                setErrors((prev) => ({ ...prev, effectiveEndDate: '' }));
+              }}
+              error={errors.effectiveEndDate}
+              readOnly={viewMode}
+            />
+          </div>
+
           <div className="flex items-center gap-4 py-2 border-b border-gray-200">
             <div className="flex-1 flex items-center justify-end gap-6 min-w-0">
               <span
@@ -394,179 +390,169 @@ const AddSalaryPopup = ({
             </div>
           </div>
 
-          <FormRow label="Basic" yearlyValue={yearly(formData.basicMonthly)}>
-            <Input
-              type="number"
-              min={0}
-              value={formData.basicMonthly ?? ''}
-              onChange={(e) => !viewMode && handleNumberChange('basicMonthly', e)}
-              error={errors.basicMonthly}
-              className="max-w-[140px]"
-              disabled={viewMode}
-            />
-          </FormRow>
+          <p className="text-sm font-semibold text-gray-800 pt-2">Earnings / Gross salary</p>
+
           <FormRow
-            label={HRA_PCT_FIELD.label}
-            yearlyValue={yearly(hraAmount)}
-            error={errors.hraMonthly}
-          >
-            <div className="flex gap-3">
-              <Input
-                type="number"
-                min={0}
-                max={100}
-                value={formData.hraMonthly ?? ''}
-                onChange={(e) => !viewMode && handleNumberChange('hraMonthly', e)}
-                className="w-[100px]"
-                rightIcon={<span className="text-gray-500 text-sm font-medium">%</span>}
-                disabled={viewMode}
-              />
-              <Input
-                type="number"
-                value={hraAmount ?? ''}
-                disabled
-                className="w-[140px] bg-gray-100"
-              />
-            </div>
-          </FormRow>
-          {MANUAL_AMOUNT_FIELDS.map(({ key, label }) => (
-            <FormRow
-              key={key}
-              label={label}
-              yearlyValue={yearly(formData[key])}
-              error={errors[key]}
-            >
-              <Input
-                type="number"
-                min={0}
-                value={formData[key] ?? ''}
-                onChange={(e) => !viewMode && handleNumberChange(key, e)}
-                className="max-w-[140px]"
-                disabled={viewMode}
-              />
-            </FormRow>
-          ))}
-          <FormRow label="Gross Salary" yearlyValue={yearly(grossSalary)}>
-            <Input
-              type="number"
-              value={grossSalary}
-              disabled
-              className="max-w-[140px] bg-gray-100"
-            />
-          </FormRow>
+            label="Salary (per month)"
+            monthlyValue={formData.salaryPerMonth ?? ''}
+            yearlyValue={yearly(formData.salaryPerMonth)}
+            error={errors.salaryPerMonth}
+            monthlyDisabled={salaryMonthlyDisabled}
+            onMonthlyChange={salaryMonthlyDisabled ? undefined : handleSalaryChange}
+          />
+
+          <FormRow
+            label="Gross payable"
+            monthlyValue={breakup.grossSalaryA}
+            yearlyValue={yearly(breakup.grossSalaryA)}
+            monthlyDisabled={readOnly}
+          />
+          <FormRow
+            label="Basic"
+            monthlyValue={breakup.basicMonthly}
+            yearlyValue={yearly(breakup.basicMonthly)}
+            monthlyDisabled={readOnly}
+          />
+          <FormRow
+            label="HRA"
+            monthlyValue={breakup.hraMonthly}
+            yearlyValue={yearly(breakup.hraMonthly)}
+            monthlyDisabled={readOnly}
+          />
+          <FormRow
+            label="Helper / Assistant allowance"
+            monthlyValue={breakup.helperAllowance}
+            yearlyValue={yearly(breakup.helperAllowance)}
+            monthlyDisabled={readOnly}
+          />
+          <FormRow
+            label="Research allowance"
+            monthlyValue={breakup.researchAllowance}
+            yearlyValue={yearly(breakup.researchAllowance)}
+            monthlyDisabled={readOnly}
+          />
+          <FormRow
+            label="Uniform allowance"
+            monthlyValue={breakup.uniformAllowance}
+            yearlyValue={yearly(breakup.uniformAllowance)}
+            monthlyDisabled={readOnly}
+          />
+          <FormRow
+            label="Children education allowance"
+            monthlyValue={breakup.childrenEducationAllowance}
+            yearlyValue={yearly(breakup.childrenEducationAllowance)}
+            monthlyDisabled={readOnly}
+          />
+          <FormRow
+            label="Food allowance"
+            monthlyValue={breakup.foodMonthly}
+            yearlyValue={yearly(breakup.foodMonthly)}
+            monthlyDisabled={readOnly}
+          />
+          <FormRow
+            label="Conveyance allowance"
+            monthlyValue={breakup.conveyanceMonthly}
+            yearlyValue={yearly(breakup.conveyanceMonthly)}
+            monthlyDisabled={readOnly}
+          />
+          <FormRow
+            label="10% of gross payable"
+            monthlyValue={breakup.pctOfGrossMonthly}
+            yearlyValue={yearly(breakup.pctOfGrossMonthly)}
+            monthlyDisabled={readOnly}
+          />
+          <FormRow
+            label="Special allowance"
+            monthlyValue={breakup.specialAllowance}
+            yearlyValue={yearly(breakup.specialAllowance)}
+            monthlyDisabled={readOnly}
+          />
+          <FormRow
+            label="Gross salary"
+            monthlyValue={breakup.grossSalaryA}
+            yearlyValue={yearly(breakup.grossSalaryA)}
+            monthlyDisabled={readOnly}
+          />
 
           <hr className="my-4 border-gray-200" />
+          <p className="text-sm font-semibold text-gray-800">Less: Deductions</p>
 
-          <div className="text-sm font-medium text-gray-700 mb-2">Add:</div>
-          <div className="space-y-1">
-            <FormRow
-              label="Employers cont. to Provident Fund"
-              yearlyValue={yearly(employerPfAmount)}
-              error={errors.employerPfMonthly}
-            >
-              <div className="flex gap-3">
-                <Input
-                  type="number"
-                  min={0}
-                  max={100}
-                  value={formData.employerPfMonthly ?? ''}
-                  onChange={(e) => !viewMode && handleNumberChange('employerPfMonthly', e)}
-                  className="w-[100px]"
-                  rightIcon={<span className="text-gray-500 text-sm font-medium">%</span>}
-                  disabled={viewMode}
-                />
-                <Input
-                  type="number"
-                  value={employerPfAmount ?? ''}
-                  disabled
-                  className="max-w-[150px] bg-gray-100"
-                />
-              </div>
-            </FormRow>
-            <FormRow
-              label="Employers cont. to ESIC"
-              yearlyValue={yearly(employerEsicMonthly)}
-              error={errors.employerEsicMonthly}
-            >
-              <Input
-                type="number"
-                min={0}
-                value={formData.employerEsicMonthly ?? ''}
-                onChange={(e) => !viewMode && handleNumberChange('employerEsicMonthly', e)}
-                className="max-w-[100px]"
-                disabled={viewMode}
-              />
-            </FormRow>
-            <FormRow label="Cost to Company (CTC) per month" yearlyValue={yearly(ctc)}>
-              <Input type="number" value={ctc} disabled className="max-w-[140px] bg-gray-100" />
-            </FormRow>
-          </div>
+          <FormRow
+            label="Employee contribution to PF"
+            monthlyValue={breakup.employeePfMonthly}
+            yearlyValue={yearly(breakup.employeePfMonthly)}
+            monthlyDisabled={readOnly}
+          />
+          <FormRow
+            label="ESI contribution (employee)"
+            monthlyValue={breakup.employeeEsicMonthly}
+            yearlyValue={yearly(breakup.employeeEsicMonthly)}
+            monthlyDisabled={readOnly}
+          />
+          <FormRow
+            label="Professional tax"
+            monthlyValue={breakup.professionalTaxMonthly}
+            yearlyValue={yearly(breakup.professionalTaxMonthly)}
+            monthlyDisabled={readOnly}
+          />
+          <FormRow
+            label="Income tax"
+            monthlyValue={breakup.incomeTaxMonthly}
+            yearlyValue={yearly(breakup.incomeTaxMonthly)}
+            monthlyDisabled={readOnly}
+          />
+          <FormRow
+            label="Total deductions"
+            monthlyValue={breakup.totalDeductionsB}
+            yearlyValue={yearly(breakup.totalDeductionsB)}
+            monthlyDisabled={readOnly}
+          />
+          <FormRow
+            label="Net pay per month"
+            monthlyValue={breakup.netPayMonthly}
+            yearlyValue={yearly(breakup.netPayMonthly)}
+            monthlyDisabled={readOnly}
+          />
 
           <hr className="my-4 border-gray-200" />
+          <p className="text-sm font-semibold text-gray-800">Additional benefits &amp; CTC</p>
 
-          <div className="text-sm font-medium text-gray-700 mb-2">Less:</div>
-          <div className="space-y-1">
-            <FormRow
-              label="Employees cont. to Provident Fund"
-              yearlyValue={yearly(employeePfAmount)}
-              error={errors.employeePfMonthly}
-            >
-              <div className="flex gap-3">
-                <Input
-                  type="number"
-                  min={0}
-                  max={100}
-                  value={formData.employeePfMonthly ?? ''}
-                  onChange={(e) => !viewMode && handleNumberChange('employeePfMonthly', e)}
-                  className="w-[100px]"
-                  rightIcon={<span className="text-gray-500 text-sm font-medium">%</span>}
-                  disabled={viewMode}
-                />
-                <Input
-                  type="number"
-                  value={employeePfAmount ?? ''}
-                  disabled
-                  className="max-w-[140px] bg-gray-100"
-                />
-              </div>
-            </FormRow>
-            <FormRow
-              label="Employees cont. to ESIC"
-              yearlyValue={yearly(employeeEsicMonthly)}
-              error={errors.employeeEsicMonthly}
-            >
-              <Input
-                type="number"
-                min={0}
-                value={formData.employeeEsicMonthly ?? ''}
-                onChange={(e) => !viewMode && handleNumberChange('employeeEsicMonthly', e)}
-                className="max-w-[140px]"
-                disabled={viewMode}
-              />
-            </FormRow>
-            <FormRow
-              label="Profession Tax"
-              yearlyValue={yearly(professionalTaxMonthly)}
-              error={errors.professionalTaxMonthly}
-            >
-              <Input
-                type="number"
-                min={0}
-                value={formData.professionalTaxMonthly ?? ''}
-                onChange={(e) => !viewMode && handleNumberChange('professionalTaxMonthly', e)}
-                className="max-w-[140px]"
-                disabled={viewMode}
-              />
-            </FormRow>
-            <FormRow label="Net take home salary monthly" yearlyValue={yearly(netTakeHome)}>
-              <Input
-                type="number"
-                value={netTakeHome}
-                disabled
-                className="max-w-[140px] bg-gray-100"
-              />
-            </FormRow>
-          </div>
+          <FormRow
+            label="Employer contribution to PF"
+            monthlyValue={breakup.employerPfMonthly}
+            yearlyValue={yearly(breakup.employerPfMonthly)}
+            monthlyDisabled={readOnly}
+          />
+          <FormRow
+            label="ESI contribution (employer)"
+            monthlyValue={breakup.employerEsicMonthly}
+            yearlyValue={yearly(breakup.employerEsicMonthly)}
+            monthlyDisabled={readOnly}
+          />
+          <FormRow
+            label="Medical insurance"
+            monthlyValue={breakup.medicalInsuranceMonthly}
+            yearlyValue={yearly(breakup.medicalInsuranceMonthly)}
+            monthlyDisabled={readOnly}
+          />
+          <FormRow
+            label="Term insurance"
+            monthlyValue={breakup.termInsuranceMonthly}
+            yearlyValue={yearly(breakup.termInsuranceMonthly)}
+            monthlyDisabled={readOnly}
+          />
+          <FormRow
+            label="Total additional benefits"
+            monthlyValue={breakup.totalAdditionalBenefitsC}
+            yearlyValue={yearly(breakup.totalAdditionalBenefitsC)}
+            monthlyDisabled={readOnly}
+          />
+          <FormRow
+            label="Cost to company"
+            monthlyValue={breakup.ctcMonthly}
+            yearlyValue={yearly(breakup.ctcMonthly)}
+            monthlyDisabled={readOnly}
+          />
         </div>
 
         <div className="flex-shrink-0 flex justify-end gap-3 pt-4 mt-4 border-t border-gray-200">

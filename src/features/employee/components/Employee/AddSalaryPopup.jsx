@@ -51,7 +51,7 @@ const computeBreakup = (salaryPerMonth) => {
   const researchAllowance = 0;
   const uniformAllowance = 0;
   const childrenEducationAllowance = 0;
-  const foodMonthly = foodAllowance;
+  const foodAllowanceMonthly = foodAllowance;
   const conveyanceMonthly = conveyanceAllowance;
   const pctOfGrossBeforeRound = grossPayable * 0.1;
   const localConveyance = 800;  // basicBeforeRound * 0.10;
@@ -64,13 +64,14 @@ const computeBreakup = (salaryPerMonth) => {
     // uniformAllowance +
     // childrenEducationAllowance +
     localConveyance +
-    foodMonthly +
+    foodAllowanceMonthly +
     // conveyanceMonthly +
     pctOfGrossBeforeRound;
-
-    debugger
-  const specialAllowanceBeforeRound = grossPayable - sumEarningsThroughPct;
-  const grossSalaryForStatutes = sumEarningsThroughPct + specialAllowanceBeforeRound;
+  const specialAllowanceRaw = grossPayable - sumEarningsThroughPct;
+  const specialAllowanceBeforeRound = specialAllowanceRaw < 0 ? 0 : specialAllowanceRaw;
+  const foodMonthly = specialAllowanceRaw < 0 ? foodAllowanceMonthly + specialAllowanceRaw : foodAllowanceMonthly;
+  const grossSalaryForStatutes =
+    basicBeforeRound + hraBeforeRound + localConveyance + foodMonthly + pctOfGrossBeforeRound + specialAllowanceBeforeRound;
 
   const employeePfBeforeRound =
     basicBeforeRound > pfBasicCap ? pfBasicCap * 0.12 : basicBeforeRound * 0.12;

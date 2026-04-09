@@ -46,7 +46,7 @@ const computeBreakup = (salaryPerMonth) => {
   const grossPayable = salaryInput;
 
   const basicBeforeRound = grossPayable * 0.5;
-  const hraBeforeRound = basicBeforeRound * 0.4;
+  const hraBeforeRound = basicBeforeRound * 0.5;
   const helperAllowance = 0;
   const researchAllowance = 0;
   const uniformAllowance = 0;
@@ -54,17 +54,21 @@ const computeBreakup = (salaryPerMonth) => {
   const foodMonthly = foodAllowance;
   const conveyanceMonthly = conveyanceAllowance;
   const pctOfGrossBeforeRound = grossPayable * 0.1;
+  const localConveyance = 800;  // basicBeforeRound * 0.10;
 
   const sumEarningsThroughPct =
     basicBeforeRound +
     hraBeforeRound +
-    helperAllowance +
-    researchAllowance +
-    uniformAllowance +
-    childrenEducationAllowance +
+    // helperAllowance +
+    // researchAllowance +
+    // uniformAllowance +
+    // childrenEducationAllowance +
+    localConveyance +
     foodMonthly +
-    conveyanceMonthly +
+    // conveyanceMonthly +
     pctOfGrossBeforeRound;
+
+    debugger
   const specialAllowanceBeforeRound = grossPayable - sumEarningsThroughPct;
   const grossSalaryForStatutes = sumEarningsThroughPct + specialAllowanceBeforeRound;
 
@@ -116,6 +120,7 @@ const computeBreakup = (salaryPerMonth) => {
     researchAllowance,
     uniformAllowance,
     childrenEducationAllowance,
+    localConveyance,
     foodMonthly,
     conveyanceMonthly,
     pctOfGrossMonthly,
@@ -420,6 +425,12 @@ const AddSalaryPopup = ({
             monthlyDisabled={readOnly}
           />
           <FormRow
+            label="Local Conveyance"
+            monthlyValue={breakup.localConveyance}
+            yearlyValue={yearly(breakup.localConveyance)}
+            monthlyDisabled={readOnly}
+          />
+          {/* <FormRow
             label="Helper / Assistant allowance"
             monthlyValue={breakup.helperAllowance}
             yearlyValue={yearly(breakup.helperAllowance)}
@@ -442,14 +453,14 @@ const AddSalaryPopup = ({
             monthlyValue={breakup.childrenEducationAllowance}
             yearlyValue={yearly(breakup.childrenEducationAllowance)}
             monthlyDisabled={readOnly}
-          />
+          /> */}
           <FormRow
             label="Food allowance"
             monthlyValue={breakup.foodMonthly}
             yearlyValue={yearly(breakup.foodMonthly)}
             monthlyDisabled={readOnly}
           />
-          <FormRow
+          {/* <FormRow
             label="Conveyance allowance"
             monthlyValue={breakup.conveyanceMonthly}
             yearlyValue={yearly(breakup.conveyanceMonthly)}
@@ -460,7 +471,7 @@ const AddSalaryPopup = ({
             monthlyValue={breakup.pctOfGrossMonthly}
             yearlyValue={yearly(breakup.pctOfGrossMonthly)}
             monthlyDisabled={readOnly}
-          />
+          /> */}
           <FormRow
             label="Special allowance"
             monthlyValue={breakup.specialAllowance}

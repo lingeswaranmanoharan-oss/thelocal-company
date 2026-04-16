@@ -377,8 +377,8 @@ const AddSalaryPopup = ({
               />
               <FormRow
                 label="Net pay per month"
-                monthlyValue={salaryFieldFromApi(salaryDetails.takeHomeMonthly)}
-                yearlyValue={salaryFieldFromApi(salaryDetails.takeHomeAnnual)}
+                monthlyValue={salaryFieldFromApi(salaryDetails.stakeHomeMonthly)}
+                yearlyValue={salaryFieldFromApi(salaryDetails.stakeHomeAnnual)}
                 monthlyDisabled={readOnly}
               />
 
